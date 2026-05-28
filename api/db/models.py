@@ -197,6 +197,8 @@ class EtlRunLog(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="running")
     error_message: Mapped[str | None] = mapped_column(String, nullable=True)
+    current_node: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    node_history: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
 
 
 class DataQualityFlag(Base):
