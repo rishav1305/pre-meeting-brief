@@ -1,0 +1,33 @@
+{
+  "company_id": "attio_anduril",
+  "interactions": [
+    {
+      "date": "2024-09-15",
+      "type": "conference",
+      "attendees": ["devon@renegade.vc"],
+      "event": "Reindustrialize 2024",
+      "raw_notes": "Devon saw Brian Schimpf keynote. Briefly chatted re Lattice platform. Energetic, technically deep. Asked for follow-up."
+    },
+    {
+      "date": "2024-11-04",
+      "type": "email",
+      "from": "trae@anduril.com",
+      "subject": "Introduction from Joe Lonsdale",
+      "raw_notes": "Trae Stephens reached out via Joe Lonsdale (8VC) intro. Offered intro call. Devon followed up but scheduling slipped through Q4."
+    },
+    {
+      "date": "2025-02-21",
+      "type": "meeting",
+      "attendees": ["devon@renegade.vc", "trae@anduril.com"],
+      "raw_notes": "30min intro. Trae walked through Anduril thesis: workflow-critical defense software. Discussed Series E performance. Renegade indicated thesis fit but check size mismatch for Series E. Trae mentioned a future smaller co-invest opportunity in their seed program."
+    },
+    {
+      "date": "2025-08-12",
+      "type": "note",
+      "author": "devon@renegade.vc",
+      "raw_notes": "Internal: Anduril Series F leaked at $14B post. Confirmed our thesis but unable to participate. Tracking for adjacent opportunities (Hadrian, Saronic, Castelion). Will revisit on next round if open to smaller cheques."
+    }
+  ],
+  "stage": "passed_series_f",
+  "last_interaction_date": "2025-08-12"
+}

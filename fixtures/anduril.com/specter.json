@@ -1,0 +1,100 @@
+{
+  "id": "spec_anduril_001",
+  "domain": "anduril.com",
+  "organization_name": "Anduril Industries",
+  "description": "Anduril Industries builds autonomous defense systems and AI-powered command software for the US Department of Defense and allied militaries. Products include Lattice (an AI-driven command and control platform), Ghost (autonomous drones), Sentry Tower (perimeter security), and Roadrunner (counter-drone). Founded by Palmer Luckey (Oculus founder) after Facebook ousted him.",
+  "industries": ["Defense", "Aerospace", "AI"],
+  "sub_industries": ["Autonomous Systems", "Defense Software", "Hardware"],
+  "operating_status": "active",
+  "highlights": [
+    "top_tier_investors",
+    "headcount_surge",
+    "government_contract_momentum",
+    "founder_with_prior_exit"
+  ],
+  "new_highlights": [
+    "pentagon_250m_contract_2026q2",
+    "iron_dome_partnership_announced"
+  ],
+  "growth_stage": "late_stage",
+  "founded_year": 2017,
+  "employee_count": 6500,
+  "employee_count_range": "5001-10000",
+  "revenue_estimate_usd": 1000000000,
+  "investors": [
+    "Founders Fund", "Andreessen Horowitz", "Valor Equity Partners",
+    "8VC", "General Catalyst", "Lux Capital", "Counterpoint Global"
+  ],
+  "funding": {
+    "total_raised_usd": 4200000000,
+    "last_round_type": "series_f",
+    "last_round_date": "2024-08-08",
+    "last_round_usd": 1500000000,
+    "post_money_valuation_usd": 14000000000,
+    "round_count": 8
+  },
+  "hq": {
+    "city": "Costa Mesa",
+    "country": "US",
+    "region": "North America"
+  },
+  "tags": ["defense", "AI", "autonomous", "dual_use", "DoD"],
+  "customer_focus": "b2b",
+  "customer_profile": "US Department of Defense, allied governments, defense primes",
+  "traction_highlights": "Recently awarded $250M Pentagon contract for autonomous systems. Iron Dome partnership with Rafael announced Q1 2026.",
+  "certifications": ["ITAR registered", "CMMC Level 3"],
+  "technologies": ["Computer Vision", "Edge Compute", "Mesh Networking", "Sensor Fusion"],
+  "traction_metrics": {
+    "web_visits": {"latest": 4200000, "trend_3mo": {"value": 4200000, "change": 380000, "pct_change": 9.95}},
+    "linkedin_followers": {"latest": 850000, "trend_6mo": {"value": 850000, "change": 92000, "pct_change": 12.13}},
+    "employee_count": {"latest": 6500, "trend_6mo": {"value": 6500, "change": 1200, "pct_change": 22.64}}
+  },
+  "web": {
+    "popularity_rank": 18500,
+    "bounce_rate": 0.34,
+    "top_country": "US",
+    "traffic_source": "Direct 58% / Search 28% / Social 7% / Referral 5% / Mail 2%"
+  },
+  "socials": {
+    "linkedin": {"url": "https://www.linkedin.com/company/anduril-industries", "follower_count": 850000}
+  },
+  "reviews": {},
+  "founder_info": [
+    {
+      "specter_person_id": "spec_p_luckey",
+      "full_name": "Palmer Luckey",
+      "title": "Founder",
+      "linkedin_url": "https://www.linkedin.com/in/palmerluckey",
+      "prior_companies": ["Oculus"],
+      "prior_exits": ["Oculus → Facebook (2014, $2B)"]
+    },
+    {
+      "specter_person_id": "spec_p_schimpf",
+      "full_name": "Brian Schimpf",
+      "title": "CEO",
+      "linkedin_url": "https://www.linkedin.com/in/brian-schimpf",
+      "prior_companies": ["Palantir Technologies"],
+      "prior_exits": []
+    },
+    {
+      "specter_person_id": "spec_p_stewart",
+      "full_name": "Trae Stephens",
+      "title": "Co-founder, Chairman",
+      "linkedin_url": "https://www.linkedin.com/in/traestephens",
+      "prior_companies": ["Palantir Technologies", "Founders Fund"],
+      "prior_exits": []
+    }
+  ],
+  "news": [
+    {"date": "2026-05-12", "title": "Anduril wins $250M Pentagon contract for autonomous systems", "url": "https://example.com/anduril-pentagon", "publisher": "Defense News"},
+    {"date": "2026-04-22", "title": "Iron Dome partnership announced with Rafael", "url": "https://example.com/anduril-iron-dome", "publisher": "TechCrunch"},
+    {"date": "2026-03-15", "title": "Anduril opens Australian facility", "url": "https://example.com/anduril-au", "publisher": "Reuters"}
+  ],
+  "awards": [
+    {"name": "Fast Company Most Innovative", "org": "Fast Company", "year": 2024, "rank": 12}
+  ],
+  "patent_count": 47,
+  "it_spend": 85000000,
+  "reported_clients": ["US Department of Defense", "UK Ministry of Defence", "Australia ADF"],
+  "hiring_signals": ["headcount_surge", "engineering_hiring", "ml_hiring"]
+}

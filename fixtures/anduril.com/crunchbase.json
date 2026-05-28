@@ -1,0 +1,25 @@
+{
+  "org": {
+    "uuid": "cb_anduril_uuid",
+    "name": "Anduril Industries",
+    "permalink": "anduril-industries",
+    "short_description": "Defense technology company building autonomous systems",
+    "founded_year": 2017,
+    "country_code": "USA",
+    "city": "Costa Mesa",
+    "operating_status": "active",
+    "homepage_url": "https://www.anduril.com",
+    "linkedin_url": "https://www.linkedin.com/company/anduril-industries",
+    "num_employees_enum": "10001+",
+    "category_list": ["Defense", "Artificial Intelligence", "Robotics"]
+  },
+  "rounds": [
+    {"announced_on": "2024-08-08", "investment_type": "series_f", "raised_usd": 1500000000, "post_money_valuation_usd": 14000000000, "investors": ["Founders Fund", "Counterpoint Global", "Andreessen Horowitz"]},
+    {"announced_on": "2022-12-02", "investment_type": "series_e", "raised_usd": 1480000000, "post_money_valuation_usd": 8480000000, "investors": ["Valor Equity Partners", "8VC", "Andreessen Horowitz"]},
+    {"announced_on": "2021-06-17", "investment_type": "series_d", "raised_usd": 450000000, "post_money_valuation_usd": 4600000000, "investors": ["Elad Gil", "Andreessen Horowitz", "Founders Fund"]},
+    {"announced_on": "2020-07-14", "investment_type": "series_c", "raised_usd": 200000000, "post_money_valuation_usd": 1900000000, "investors": ["Andreessen Horowitz", "Founders Fund"]}
+  ],
+  "board_members_and_advisors": [
+    {"full_name": "Peter Thiel", "title": "Board Observer", "affiliated_firm": "Founders Fund"}
+  ]
+}
