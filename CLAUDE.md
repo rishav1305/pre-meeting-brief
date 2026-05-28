@@ -1,7 +1,9 @@
 # Pre-Meeting Brief — Project Memory
 
 ## What this is
-A take-home submission to Renegade Capital. Builds an automated pre-meeting brief platform.
+A take-home submission **to Capital Numbers** for the **AI-Native Tech Lead** role (Gurgaon). The assignment uses **Renegade Capital** as the example VC client — so the platform is designed around Renegade's thesis, schema, and tickets, but the deliverable is the architecture + working POC for Capital Numbers to evaluate.
+
+**Important framing**: when documents/code refer to "the firm" or "Renegade", that's the example/demo client baked into the take-home materials. The hiring entity is Capital Numbers.
 
 ## Deliverables (due 2026-05-29 EOD)
 - Live URL: https://rishavchatterjee.com/pre-meeting-brief

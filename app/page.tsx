@@ -3,10 +3,10 @@ export default function Home() {
     <main className="min-h-screen bg-slate-50 px-6 py-16">
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-medium uppercase tracking-wider text-slate-500">
-          Renegade Capital
+          Take-home submission · Capital Numbers · AI-Native Tech Lead
         </p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
-          Pre-Meeting Brief
+          Pre-Meeting Brief Platform
         </h1>
         <p className="mt-4 text-lg text-slate-600">
           Phase 0 — deployed. Phase 1 (schema, fixtures, agenda) in progress.

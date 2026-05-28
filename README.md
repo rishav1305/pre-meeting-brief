@@ -1,6 +1,8 @@
 # Pre-Meeting Brief Platform
 
-An automated pre-meeting brief platform for Renegade Capital partners. Triggered on first meetings with companies in a rolling 3-month window. Pulls data from CRM (Attio), third-party sources (Specter, Crunchbase, PitchBook), and live web. Synthesises a tiered dashboard brief tuned to Renegade's "Markets That Matter" thesis via an agentic workflow.
+**Take-home submission** · [Capital Numbers](https://www.capitalnumbers.com/) · **AI-Native Tech Lead** role (Gurgaon).
+
+An agentic pre-meeting brief platform designed around **Renegade Capital** (the example VC client in the assignment materials). Triggered on first meetings with a company in a rolling 3-month window. Pulls data from CRM (Attio), third-party sources (Specter, Crunchbase, PitchBook), and live web. Synthesises a tiered dashboard brief tuned to Renegade's "Markets That Matter" thesis via an agentic workflow.
 
 **Approach document**: [`docs/approach.md`](docs/approach.md) — full architecture, data model, agentic workflow design, MCP server design, phase plan, and production roadmap.
 

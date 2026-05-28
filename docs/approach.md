@@ -2,6 +2,8 @@
 
 **Author**: Rishav Chatterjee
 **Date**: 2026-05-28
+**Submission to**: Capital Numbers — AI-Native Tech Lead role (Gurgaon)
+**Designed around**: Renegade Capital — the example VC client in the assignment materials
 **Submission deadline**: 2026-05-29 EOD
 **Live POC**: https://rishavchatterjee.com/pre-meeting-brief
 **Repo**: https://github.com/rishav1305/pre-meeting-brief
@@ -9,6 +11,8 @@
 ---
 
 ## 1. Summary
+
+This is a take-home submission for the **Capital Numbers AI-Native Tech Lead** role. The assignment brief — a pre-meeting brief automation system — references **Renegade Capital** as the example VC client (their thesis "Markets That Matter," their data dictionary, their Linear ticket structure). The platform is therefore *designed for* Renegade and *delivered to* Capital Numbers as the architecture-and-build deliverable. Throughout this document, "the firm" refers to Renegade as the demo client; "the reviewer" refers to Capital Numbers' hiring panel.
 
 Build an automated pre-meeting brief platform for Renegade Capital partners. Triggered on the first meeting with a company within a rolling 3-month window. Pulls structured data from CRM (Attio) and third-party sources (Specter, Crunchbase, PitchBook), fetches live web context via Anthropic's `web_search` tool, merges with explicit source-priority rules from the data dictionary, and runs an agentic synthesis loop tuned to Renegade's "Markets That Matter" thesis. The resulting brief — a tiered dashboard with confidence-marked facts and a click-through audit panel — is surfaced on the partner's daily agenda.
 
