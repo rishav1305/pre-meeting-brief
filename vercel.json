@@ -11,6 +11,10 @@
     {
       "source": "/pre-meeting-brief/api/:path*",
       "destination": "/api/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index"
     }
   ]
 }
