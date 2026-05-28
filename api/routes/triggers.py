@@ -20,15 +20,15 @@ reuses the row instead of opening a new one.
 """
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import and_, select
 
 from api.config import settings
-from api.db.models import Company, EtlRunLog, PreMeetingBrief
+from api.db.models import CalendarEvent, Company, EtlRunLog, PreMeetingBrief
 from api.db.session import SessionLocal
 from api.pipeline.graph import run_pipeline
 
@@ -109,6 +109,165 @@ async def trigger_manual(
     return TriggerResponse(
         run_id=run_id,
         status_url=f"/api/triggers/runs/{run_id}",
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /api/triggers/scan — Vercel Cron entry point
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class ScanEvent(BaseModel):
+    event_id: UUID
+    partner: str
+    company_domain: str
+    meeting_date: date
+    action: str  # one of: "triggered" | "skipped_existing_brief" | "skipped_recent_engagement"
+    run_id: UUID | None = None
+    reason: str | None = None
+
+
+class ScanResponse(BaseModel):
+    scanned_at: str
+    horizon_days: int
+    candidates: int
+    triggered: int
+    skipped: int
+    events: list[ScanEvent]
+
+
+def _company_name_from_domain(domain: str) -> str:
+    """Cheap derivation for the trigger payload — the pipeline normalizes
+    domain on resolve_company anyway, but the run_pipeline signature wants
+    a name. Production replaces this with an Attio lookup or a lookup table.
+    """
+    base = domain.split(".")[0]
+    return base[:1].upper() + base[1:]
+
+
+@router.get("/triggers/scan", response_model=ScanResponse)
+async def scan_calendar(
+    background_tasks: BackgroundTasks,
+    horizon_days: int = Query(1, ge=1, le=14, description="how many days ahead to scan"),
+    dry_run: bool = Query(False, description="if true, report candidates without triggering"),
+) -> ScanResponse:
+    """Calendar-driven trigger detection — daily cron entry point.
+
+    Walks ``canonical.calendar_events`` for events in the next ``horizon_days``,
+    and for each event:
+      1. Skips if a ``pre_meeting_brief`` already exists for
+         ``(partner, meeting_date)`` matching the event's company_domain —
+         idempotent re-runs.
+      2. Otherwise kicks off ``run_pipeline`` via FastAPI BackgroundTasks.
+         The pipeline's own Qualification Agent applies the 3-month rule;
+         this endpoint stops short of duplicating that logic so the agent
+         remains the source of truth.
+
+    The Vercel Cron config in ``vercel.json`` invokes this at 06:00 UTC daily.
+    The endpoint is intentionally unauthenticated — Vercel Cron does not pass
+    the admin password header, and the call surface is read-mostly: the only
+    side effect is triggering pipeline runs for events that pass the
+    qualification gate, which is the entire point of the daily sweep.
+    """
+    today = date.today()
+    end_window = today + timedelta(days=horizon_days)
+    scanned_events: list[ScanEvent] = []
+    triggered_count = 0
+    skipped_count = 0
+
+    async with SessionLocal() as session:
+        rows = await session.scalars(
+            select(CalendarEvent).where(
+                and_(
+                    CalendarEvent.meeting_date >= today,
+                    CalendarEvent.meeting_date <= end_window,
+                )
+            )
+        )
+        events = rows.all()
+
+        for ev in events:
+            company = await session.scalar(
+                select(Company).where(Company.domain == ev.company_domain)
+            )
+            existing_brief = None
+            if company is not None:
+                existing_brief = await session.scalar(
+                    select(PreMeetingBrief).where(
+                        and_(
+                            PreMeetingBrief.company_id == company.company_id,
+                            PreMeetingBrief.partner == ev.partner,
+                            PreMeetingBrief.meeting_date == ev.meeting_date,
+                        )
+                    )
+                )
+            if existing_brief is not None:
+                scanned_events.append(
+                    ScanEvent(
+                        event_id=ev.event_id,
+                        partner=ev.partner,
+                        company_domain=ev.company_domain,
+                        meeting_date=ev.meeting_date,
+                        action="skipped_existing_brief",
+                        reason=f"brief {str(existing_brief.brief_id)[:8]}… already exists",
+                    )
+                )
+                skipped_count += 1
+                continue
+
+            if dry_run:
+                scanned_events.append(
+                    ScanEvent(
+                        event_id=ev.event_id,
+                        partner=ev.partner,
+                        company_domain=ev.company_domain,
+                        meeting_date=ev.meeting_date,
+                        action="triggered",
+                        reason="dry_run — would have triggered",
+                    )
+                )
+                continue
+
+            # Pre-create the run log so we can return the run_id in the scan
+            # response (identical pattern to /triggers/manual).
+            run = EtlRunLog(company_id=None, status="running")
+            session.add(run)
+            await session.flush()
+            run_id_local = run.run_id
+            await session.commit()
+
+            # Fire-and-forget via BackgroundTasks — same pattern as
+            # /triggers/manual. Vercel Cron requests run inside a normal
+            # request scope, so BackgroundTasks honors them.
+            background_tasks.add_task(
+                run_pipeline,
+                company_name=_company_name_from_domain(ev.company_domain),
+                domain=ev.company_domain,
+                meeting_date=ev.meeting_date,
+                partner=ev.partner,
+                run_id=run_id_local,
+            )
+
+            scanned_events.append(
+                ScanEvent(
+                    event_id=ev.event_id,
+                    partner=ev.partner,
+                    company_domain=ev.company_domain,
+                    meeting_date=ev.meeting_date,
+                    action="triggered",
+                    run_id=run_id_local,
+                    reason="no existing brief; qualification agent will gate downstream",
+                )
+            )
+            triggered_count += 1
+
+    return ScanResponse(
+        scanned_at=datetime.utcnow().isoformat() + "Z",
+        horizon_days=horizon_days,
+        candidates=len(scanned_events),
+        triggered=triggered_count,
+        skipped=skipped_count,
+        events=scanned_events,
     )
 
 

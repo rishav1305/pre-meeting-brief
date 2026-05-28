@@ -16,5 +16,11 @@
       "source": "/api/:path*",
       "destination": "/api/index"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/triggers/scan",
+      "schedule": "0 6 * * *"
+    }
   ]
 }
