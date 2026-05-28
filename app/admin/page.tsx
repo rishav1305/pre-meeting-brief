@@ -35,9 +35,14 @@ export default function AdminPage() {
     setRunId(null);
   }
 
+  // When a run is in flight, the card-per-node timeline needs a touch more
+  // horizontal room than the login/launch forms. Widen to max-w-3xl in that
+  // state only; keep the form compact at max-w-2xl.
+  const containerWidth = runId !== null ? "max-w-3xl" : "max-w-2xl";
+
   return (
     <main className="px-6 py-10 sm:py-14">
-      <div className="mx-auto max-w-2xl">
+      <div className={`mx-auto ${containerWidth}`}>
         <header className="pb-6">
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
             Admin
