@@ -1,0 +1,95 @@
+{
+  "id": "spec_modal_001",
+  "domain": "modal.com",
+  "organization_name": "Modal Labs",
+  "description": "Modal is a serverless compute platform purpose-built for AI/ML workloads. Developers write plain Python functions and Modal runs them in the cloud on GPUs with sub-second cold starts, no containers to manage, and pay-per-second pricing. Heavy users include AI inference startups, training pipelines, and batch data jobs.",
+  "industries": ["Cloud Infrastructure", "Developer Tools", "AI"],
+  "sub_industries": ["Serverless Compute", "MLOps", "GPU Cloud"],
+  "operating_status": "active",
+  "highlights": [
+    "top_tier_investors",
+    "founder_with_prior_exit",
+    "developer_traction",
+    "ai_native"
+  ],
+  "new_highlights": [
+    "h100_pricing_announcement_2026q1",
+    "100k_developer_milestone"
+  ],
+  "growth_stage": "early_stage",
+  "founded_year": 2021,
+  "employee_count": 30,
+  "employee_count_range": "11-50",
+  "revenue_estimate_usd": 12000000,
+  "investors": [
+    "Redpoint Ventures",
+    "Amplify Partners",
+    "Lux Capital",
+    "Definition Capital"
+  ],
+  "funding": {
+    "total_raised_usd": 23000000,
+    "last_round_type": "series_a",
+    "last_round_date": "2024-03-26",
+    "last_round_usd": 16000000,
+    "post_money_valuation_usd": 250000000,
+    "round_count": 2
+  },
+  "hq": {
+    "city": "New York",
+    "country": "US",
+    "region": "North America"
+  },
+  "tags": ["infrastructure", "AI", "developer_tools", "serverless", "GPU"],
+  "customer_focus": "b2b",
+  "customer_profile": "AI/ML startups, data teams at growth-stage companies, indie AI builders",
+  "traction_highlights": "Crossed 100k registered developers in early 2026. Aggressive H100/H200 pricing cuts driving net-new sign-ups.",
+  "certifications": ["SOC 2 Type II"],
+  "technologies": ["Python", "gVisor", "Firecracker", "Kubernetes"],
+  "traction_metrics": {
+    "web_visits": {"latest": 620000, "trend_3mo": {"value": 620000, "change": 145000, "pct_change": 30.53}},
+    "linkedin_followers": {"latest": 11500, "trend_6mo": {"value": 11500, "change": 4200, "pct_change": 57.53}},
+    "employee_count": {"latest": 30, "trend_6mo": {"value": 30, "change": 9, "pct_change": 42.86}}
+  },
+  "web": {
+    "popularity_rank": 92000,
+    "bounce_rate": 0.38,
+    "top_country": "US",
+    "traffic_source": "Direct 44% / Search 38% / Social 11% / Referral 5% / Mail 2%"
+  },
+  "socials": {
+    "linkedin": {"url": "https://www.linkedin.com/company/modal-labs", "follower_count": 11500}
+  },
+  "reviews": {},
+  "founder_info": [
+    {
+      "specter_person_id": "spec_p_erik_bernhardsson",
+      "full_name": "Erik Bernhardsson",
+      "title": "Founder & CEO",
+      "linkedin_url": "https://www.linkedin.com/in/erikbern",
+      "prior_companies": ["Spotify", "Better.com"],
+      "prior_exits": []
+    },
+    {
+      "specter_person_id": "spec_p_akshat_bubna",
+      "full_name": "Akshat Bubna",
+      "title": "Co-founder",
+      "linkedin_url": "https://www.linkedin.com/in/akshatbubna",
+      "prior_companies": ["Better.com"],
+      "prior_exits": []
+    }
+  ],
+  "news": [
+    {"date": "2026-03-11", "title": "Modal slashes H100 pricing, undercuts hyperscalers", "url": "https://techcrunch.com/modal-h100-pricing", "publisher": "TechCrunch"},
+    {"date": "2026-01-28", "title": "Modal crosses 100k developers, profile of Erik Bernhardsson", "url": "https://example.com/modal-100k", "publisher": "The Information"},
+    {"date": "2025-09-14", "title": "Why AI teams are abandoning Kubernetes for Modal", "url": "https://example.com/modal-k8s-vs", "publisher": "Stratechery"},
+    {"date": "2025-05-02", "title": "Modal launches durable functions for long-running jobs", "url": "https://example.com/modal-durable-functions", "publisher": "InfoQ"}
+  ],
+  "awards": [
+    {"name": "GitHub Octoverse Rising Star", "org": "GitHub", "year": 2025, "rank": null}
+  ],
+  "patent_count": null,
+  "it_spend": null,
+  "reported_clients": null,
+  "hiring_signals": ["engineering_hiring", "infra_hiring"]
+}

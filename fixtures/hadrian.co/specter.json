@@ -1,0 +1,89 @@
+{
+  "id": "spec_hadrian_001",
+  "domain": "hadrian.co",
+  "organization_name": "Hadrian",
+  "description": "Hadrian operates AI-powered, highly automated precision manufacturing factories that produce complex metal parts for aerospace and defense primes (SpaceX, Anduril, Lockheed Martin, and others). The platform combines proprietary software, robotics, and CNC machining to compress lead times for mission-critical components and rebuild a domestic industrial base for the defense sector.",
+  "industries": ["Manufacturing", "Defense", "Aerospace"],
+  "sub_industries": ["Precision Manufacturing", "Industrial Automation", "AI"],
+  "operating_status": "active",
+  "highlights": [
+    "top_tier_investors",
+    "defense_contract_momentum",
+    "headcount_surge",
+    "founder_led"
+  ],
+  "new_highlights": [
+    "2nd_factory_announced_2026q1",
+    "series_b_extension_2025"
+  ],
+  "growth_stage": "growth_stage",
+  "founded_year": 2020,
+  "employee_count": 250,
+  "employee_count_range": "201-500",
+  "revenue_estimate_usd": 45000000,
+  "investors": [
+    "Lux Capital",
+    "Founders Fund",
+    "Andreessen Horowitz",
+    "Construct Capital",
+    "Caffeinated Capital",
+    "1517 Fund"
+  ],
+  "funding": {
+    "total_raised_usd": 118000000,
+    "last_round_type": "series_b",
+    "last_round_date": "2024-02-13",
+    "last_round_usd": 90000000,
+    "post_money_valuation_usd": 500000000,
+    "round_count": 4
+  },
+  "hq": {
+    "city": "Los Angeles",
+    "country": "US",
+    "region": "North America"
+  },
+  "tags": ["defense", "manufacturing", "dual_use", "AI", "automation"],
+  "customer_focus": "b2b",
+  "customer_profile": "Aerospace and defense primes, hypersonics startups, space launch companies",
+  "traction_highlights": "Second factory announced Q1 2026. Reported customer wins with SpaceX, Anduril, and multiple hypersonics programs.",
+  "certifications": ["ITAR registered", "AS9100"],
+  "technologies": ["CNC Automation", "Computer Vision", "Robotics", "MES Software"],
+  "traction_metrics": {
+    "web_visits": {"latest": 180000, "trend_3mo": {"value": 180000, "change": 24000, "pct_change": 15.38}},
+    "linkedin_followers": {"latest": 42000, "trend_6mo": {"value": 42000, "change": 11000, "pct_change": 35.48}},
+    "employee_count": {"latest": 250, "trend_6mo": {"value": 250, "change": 80, "pct_change": 47.06}}
+  },
+  "web": {
+    "popularity_rank": 412000,
+    "bounce_rate": 0.41,
+    "top_country": "US",
+    "traffic_source": "Direct 52% / Search 31% / Social 9% / Referral 6% / Mail 2%"
+  },
+  "socials": {
+    "linkedin": {"url": "https://www.linkedin.com/company/hadrian-automation", "follower_count": 42000}
+  },
+  "reviews": {},
+  "founder_info": [
+    {
+      "specter_person_id": "spec_p_chris_power",
+      "full_name": "Chris Power",
+      "title": "Founder & CEO",
+      "linkedin_url": "https://www.linkedin.com/in/chrisrobertpower",
+      "prior_companies": ["Palantir Technologies"],
+      "prior_exits": []
+    }
+  ],
+  "news": [
+    {"date": "2026-04-18", "title": "Hadrian announces second factory in Arizona to support hypersonics programs", "url": "https://techcrunch.com/hadrian-arizona-factory", "publisher": "TechCrunch"},
+    {"date": "2026-02-09", "title": "Hadrian signs multi-year supply deal with major defense prime", "url": "https://defensenews.com/hadrian-prime-deal", "publisher": "Defense News"},
+    {"date": "2025-11-21", "title": "Hadrian raises Series B extension led by Lux Capital", "url": "https://example.com/hadrian-series-b-extension", "publisher": "Bloomberg"},
+    {"date": "2025-08-04", "title": "Inside Hadrian's AI-driven precision factory floor", "url": "https://example.com/hadrian-factory-tour", "publisher": "The Information"}
+  ],
+  "awards": [
+    {"name": "CNBC Disruptor 50", "org": "CNBC", "year": 2025, "rank": 28}
+  ],
+  "patent_count": null,
+  "it_spend": null,
+  "reported_clients": null,
+  "hiring_signals": ["headcount_surge", "manufacturing_hiring", "engineering_hiring"]
+}

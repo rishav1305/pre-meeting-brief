@@ -1,0 +1,95 @@
+{
+  "id": "spec_mercury_001",
+  "domain": "mercury.com",
+  "organization_name": "Mercury",
+  "description": "Mercury is a banking platform purpose-built for startups and growing technology companies. Offers business checking and savings, corporate cards, treasury, venture debt, and bill pay through partner banks (Choice Financial Group, Column N.A., Evolve). Recently expanded into personal banking and IRAs for tech founders.",
+  "industries": ["Fintech", "Banking", "SaaS"],
+  "sub_industries": ["Business Banking", "Treasury Management", "Startup Banking"],
+  "operating_status": "active",
+  "highlights": [
+    "top_tier_investors",
+    "profitable",
+    "headcount_growth"
+  ],
+  "new_highlights": [
+    "personal_banking_pilot_2026q1",
+    "profitability_milestone_2024"
+  ],
+  "growth_stage": "growth_stage",
+  "founded_year": 2017,
+  "employee_count": 700,
+  "employee_count_range": "501-1000",
+  "revenue_estimate_usd": 250000000,
+  "investors": [
+    "Coatue",
+    "Andreessen Horowitz",
+    "CRV",
+    "Sapphire Ventures",
+    "Mercury Investors LLC"
+  ],
+  "funding": {
+    "total_raised_usd": 152000000,
+    "last_round_type": "series_c",
+    "last_round_date": "2021-07-20",
+    "last_round_usd": 120000000,
+    "post_money_valuation_usd": 1600000000,
+    "round_count": 4
+  },
+  "hq": {
+    "city": "San Francisco",
+    "country": "US",
+    "region": "North America"
+  },
+  "tags": ["fintech", "banking", "startups", "B2B"],
+  "customer_focus": "b2b",
+  "customer_profile": "Venture-backed startups, indie founders, growing tech businesses",
+  "traction_highlights": "Reported profitable since 2024 with no new equity raised since 2021 Series C. Personal banking pilot launched Q1 2026.",
+  "certifications": ["SOC 2 Type II"],
+  "technologies": ["Banking-as-a-Service", "React", "Postgres", "Plaid"],
+  "traction_metrics": {
+    "web_visits": {"latest": 2900000, "trend_3mo": {"value": 2900000, "change": 210000, "pct_change": 7.81}},
+    "linkedin_followers": {"latest": 138000, "trend_6mo": {"value": 138000, "change": 18000, "pct_change": 15.00}},
+    "employee_count": {"latest": 700, "trend_6mo": {"value": 700, "change": 90, "pct_change": 14.75}}
+  },
+  "web": {
+    "popularity_rank": 28000,
+    "bounce_rate": 0.37,
+    "top_country": "US",
+    "traffic_source": "Direct 51% / Search 33% / Social 7% / Referral 6% / Mail 3%"
+  },
+  "socials": {
+    "linkedin": {"url": "https://www.linkedin.com/company/mercurytechnologies", "follower_count": 138000}
+  },
+  "reviews": {},
+  "founder_info": [
+    {
+      "specter_person_id": "spec_p_immad_akhund",
+      "full_name": "Immad Akhund",
+      "title": "Co-founder & CEO",
+      "linkedin_url": "https://www.linkedin.com/in/immad",
+      "prior_companies": ["Heyzap", "Y Combinator"],
+      "prior_exits": ["Heyzap → Fyber (2016)"]
+    },
+    {
+      "specter_person_id": "spec_p_max_tagher",
+      "full_name": "Max Tagher",
+      "title": "Co-founder & CXO",
+      "linkedin_url": "https://www.linkedin.com/in/maxtagher",
+      "prior_companies": ["Heyzap"],
+      "prior_exits": ["Heyzap → Fyber (2016)"]
+    }
+  ],
+  "news": [
+    {"date": "2026-03-18", "title": "Mercury opens personal banking pilot for tech founders", "url": "https://techcrunch.com/mercury-personal-banking", "publisher": "TechCrunch"},
+    {"date": "2026-02-05", "title": "Mercury launches IRA product for startup employees", "url": "https://example.com/mercury-ira", "publisher": "Forbes"},
+    {"date": "2025-10-22", "title": "Mercury says it has been profitable for 18+ months, no new raise planned", "url": "https://example.com/mercury-profitable", "publisher": "The Information"},
+    {"date": "2025-06-11", "title": "Mercury rolls out AI features for bill pay and reconciliation", "url": "https://example.com/mercury-ai-features", "publisher": "InfoQ"}
+  ],
+  "awards": [
+    {"name": "Forbes Fintech 50", "org": "Forbes", "year": 2025, "rank": null}
+  ],
+  "patent_count": null,
+  "it_spend": null,
+  "reported_clients": null,
+  "hiring_signals": ["engineering_hiring", "compliance_hiring"]
+}

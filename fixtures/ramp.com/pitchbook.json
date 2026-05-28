@@ -1,0 +1,11 @@
+{
+  "pb_id": "pb_ramp",
+  "domain": "ramp.com",
+  "total_raised_usd": 1200000000,
+  "last_round_type": "Series D",
+  "last_round_date": "2024-04-04",
+  "last_round_usd": 150000000,
+  "post_money_valuation_usd": 13000000000,
+  "loaded_at": "2026-05-20T00:00:00Z",
+  "loaded_by": "demo_seed"
+}

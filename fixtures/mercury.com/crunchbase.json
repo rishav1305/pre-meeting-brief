@@ -1,0 +1,26 @@
+{
+  "org": {
+    "uuid": "cb_mercury_uuid",
+    "name": "Mercury",
+    "permalink": "mercury-technologies",
+    "short_description": "Banking platform for startups and growing technology companies",
+    "founded_year": 2017,
+    "country_code": "USA",
+    "city": "San Francisco",
+    "operating_status": "active",
+    "homepage_url": "https://mercury.com",
+    "linkedin_url": "https://www.linkedin.com/company/mercurytechnologies",
+    "num_employees_enum": "501-1000",
+    "category_list": ["Financial Services", "FinTech", "Banking"]
+  },
+  "rounds": [
+    {"announced_on": "2021-07-20", "investment_type": "series_c", "raised_usd": 120000000, "post_money_valuation_usd": 1600000000, "investors": ["Coatue", "Andreessen Horowitz", "CRV"]},
+    {"announced_on": "2020-08-26", "investment_type": "series_b", "raised_usd": 20000000, "post_money_valuation_usd": null, "investors": ["Andreessen Horowitz", "CRV"]},
+    {"announced_on": "2019-04-30", "investment_type": "series_a", "raised_usd": 8500000, "post_money_valuation_usd": null, "investors": ["CRV", "Andreessen Horowitz"]},
+    {"announced_on": "2018-04-12", "investment_type": "seed", "raised_usd": 3500000, "post_money_valuation_usd": null, "investors": ["CRV", "Naval Ravikant", "Andreessen Horowitz"]}
+  ],
+  "board_members_and_advisors": [
+    {"full_name": "Anish Acharya", "title": "Board Director", "affiliated_firm": "Andreessen Horowitz"},
+    {"full_name": "Saar Gur", "title": "Board Director", "affiliated_firm": "CRV"}
+  ]
+}

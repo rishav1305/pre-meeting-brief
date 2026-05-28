@@ -1,0 +1,33 @@
+{
+  "company_id": "attio_hadrian",
+  "interactions": [
+    {
+      "date": "2024-09-16",
+      "type": "conference",
+      "attendees": ["devon@renegade.vc"],
+      "event": "Reindustrialize 2024",
+      "raw_notes": "Devon met Chris Power on the expo floor. Got a 15min walkthrough of the factory video. Chris energetic about dual-use thesis — Anduril, SpaceX as anchor customers. Asked about timing of next round."
+    },
+    {
+      "date": "2024-11-22",
+      "type": "email",
+      "from": "chris@hadrian.co",
+      "subject": "Follow-up — Renegade x Hadrian",
+      "raw_notes": "Chris followed up post-Reindustrialize. Sent investor deck. Highlighted contract pipeline with 2 hypersonics primes. Devon asked Maya to dig into unit economics."
+    },
+    {
+      "date": "2025-03-04",
+      "type": "meeting",
+      "attendees": ["devon@renegade.vc", "maya@renegade.vc", "chris@hadrian.co"],
+      "raw_notes": "45min Zoom. Chris walked through factory throughput, gross margins (~38% trending to 50% at scale), Series B use of proceeds. Renegade interested but Series B already closed. Chris mentioned a possible Series B extension in H2 2025."
+    },
+    {
+      "date": "2025-10-30",
+      "type": "note",
+      "author": "devon@renegade.vc",
+      "raw_notes": "Internal: Hadrian Series B extension reportedly closing at ~$700M post (Lux led). Reached out to Chris for allocation — he says oversubscribed but offered SPV at $25k min. Reviewing with team — fits Renegade thesis (industrial automation + dual-use). Pre-meeting requested for 2026-05-29."
+    }
+  ],
+  "stage": "active_diligence",
+  "last_interaction_date": "2025-10-30"
+}

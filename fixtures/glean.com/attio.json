@@ -1,0 +1,33 @@
+{
+  "company_id": "attio_glean",
+  "interactions": [
+    {
+      "date": "2022-09-20",
+      "type": "conference",
+      "attendees": ["maya@renegade.vc"],
+      "event": "SaaStr Annual",
+      "raw_notes": "Maya attended Arvind Jain's fireside on enterprise search. Solid pedigree (ex-Google search, Rubrik IPO). Met briefly at the reception — Arvind cordial but clearly oversubscribed on the Series C."
+    },
+    {
+      "date": "2023-11-14",
+      "type": "email",
+      "from": "tr@glean.com",
+      "subject": "Glean update — agents roadmap",
+      "raw_notes": "TR Vishwanath sent a courtesy investor update. Highlighted upcoming agent platform and design partner program. Maya replied with congrats; no diligence opened (round closed)."
+    },
+    {
+      "date": "2024-09-15",
+      "type": "note",
+      "author": "devon@renegade.vc",
+      "raw_notes": "Internal: Glean Series E announced at $4.6B. Horizontal enterprise SaaS — adjacent at best to Renegade thesis (we focus vertical workflow + dual-use industrials). Reference for AI-search comparables. Not a target."
+    },
+    {
+      "date": "2026-04-15",
+      "type": "note",
+      "author": "maya@renegade.vc",
+      "raw_notes": "Internal: Glean's no-code agent builder is the closest competitor to a Renegade portfolio company's agent platform. Surfacing for the platform review next month. Glean itself remains a pass on thesis-fit grounds (too horizontal, too late-stage)."
+    }
+  ],
+  "stage": "tracked_no_action",
+  "last_interaction_date": "2026-04-15"
+}

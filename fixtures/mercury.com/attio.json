@@ -1,0 +1,33 @@
+{
+  "company_id": "attio_mercury",
+  "interactions": [
+    {
+      "date": "2021-06-08",
+      "type": "conference",
+      "attendees": ["devon@renegade.vc"],
+      "event": "TechCrunch Disrupt",
+      "raw_notes": "Devon caught Immad Akhund's panel on banking-as-a-service. Brief expo-floor chat — Immad shared they were finalizing the Series C and not opening allocation. Polite handshake; said keep in touch."
+    },
+    {
+      "date": "2022-02-17",
+      "type": "email",
+      "from": "immad@mercury.com",
+      "subject": "Mercury investor update — Q4 2021",
+      "raw_notes": "Standard quarterly update sent to broad investor list (Renegade on the cc as a prospective LP/co-investor from prior intro). Highlighted profitability path. Devon replied with kudos; no diligence opened."
+    },
+    {
+      "date": "2024-08-21",
+      "type": "note",
+      "author": "maya@renegade.vc",
+      "raw_notes": "Internal: Mercury reported profitable, no new raise. Horizontal startup banking — adjacent at best to Renegade thesis. Sourcing this through Coatue's secondary market just to track price discovery — no action."
+    },
+    {
+      "date": "2026-03-20",
+      "type": "note",
+      "author": "devon@renegade.vc",
+      "raw_notes": "Internal: Mercury personal banking launch is interesting consumer extension; doesn't change our thesis fit (we focus on workflow-critical and dual-use industrials, not consumer/horizontal banking). Keeping on tracked list for benchmarking only."
+    }
+  ],
+  "stage": "tracked_no_action",
+  "last_interaction_date": "2026-03-20"
+}

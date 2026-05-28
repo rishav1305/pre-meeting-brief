@@ -1,0 +1,33 @@
+{
+  "company_id": "attio_modal",
+  "interactions": [
+    {
+      "date": "2024-06-12",
+      "type": "conference",
+      "attendees": ["maya@renegade.vc"],
+      "event": "AI Engineer Summit",
+      "raw_notes": "Maya saw Erik Bernhardsson keynote on serverless GPU. Solid technical depth — referenced internal Spotify ML infra anecdotes. Booth had a live demo running stable-diffusion fine-tunes. Logged follow-up."
+    },
+    {
+      "date": "2024-10-08",
+      "type": "email",
+      "from": "erik@modal.com",
+      "subject": "Re: intro from Olof Mathe",
+      "raw_notes": "Erik responded to Olof's intro. Open to a chat but said they aren't raising — Series A still has runway. Suggested staying in touch for a future B."
+    },
+    {
+      "date": "2025-04-17",
+      "type": "meeting",
+      "attendees": ["devon@renegade.vc", "maya@renegade.vc", "erik@modal.com"],
+      "raw_notes": "30min coffee in NYC. Erik described the H100 pricing strategy, ARR trending past $15M, mostly bottoms-up. Renegade pressed on competitive moat vs Replicate/Baseten — Erik's answer: developer love + cold-start latency. Devon noted thesis fit (workflow-critical AI infra) but valuation guidance ($800M-$1B) likely above Renegade range."
+    },
+    {
+      "date": "2026-02-19",
+      "type": "note",
+      "author": "maya@renegade.vc",
+      "raw_notes": "Internal: H100 pricing announcement is moving the needle — net-new sign-ups up sharply per Erik's last email. Series B rumored for H2 2026 at $1B+. Putting on the active watchlist; would want to pre-empt at a smaller round size if possible."
+    }
+  ],
+  "stage": "active_watchlist",
+  "last_interaction_date": "2026-02-19"
+}

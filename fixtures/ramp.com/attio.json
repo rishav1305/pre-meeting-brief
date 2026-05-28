@@ -1,0 +1,33 @@
+{
+  "company_id": "attio_ramp",
+  "interactions": [
+    {
+      "date": "2021-10-04",
+      "type": "conference",
+      "attendees": ["devon@renegade.vc"],
+      "event": "Money 20/20",
+      "raw_notes": "Devon saw Eric Glyman on a panel about the future of corporate cards. Caught him briefly post-panel — Eric remembered Devon from the Paribus days. Said they were 'mostly buttoned up' on Series C but happy to chat."
+    },
+    {
+      "date": "2022-05-19",
+      "type": "email",
+      "from": "eric@ramp.com",
+      "subject": "Catching up — Renegade x Ramp",
+      "raw_notes": "Eric sent a courtesy update post Series C. Mentioned focus on bill pay product. Devon replied congratulating. No follow-on diligence — round was already closed and pre-empted."
+    },
+    {
+      "date": "2024-04-10",
+      "type": "note",
+      "author": "devon@renegade.vc",
+      "raw_notes": "Internal: Ramp Series D announced at $13B. Horizontal SaaS — not a thesis fit for Renegade (we focus on workflow-critical vertical infra and dual-use industrials). Tracking as a benchmark for fintech multiples but not a target."
+    },
+    {
+      "date": "2026-03-06",
+      "type": "note",
+      "author": "maya@renegade.vc",
+      "raw_notes": "Internal: Ramp AI agents launch is interesting as a data point on agent commercialization in finance workflows. Adding to competitive-landscape doc for our agent-platform thesis but Ramp itself remains a pass on thesis-fit grounds."
+    }
+  ],
+  "stage": "tracked_no_action",
+  "last_interaction_date": "2026-03-06"
+}

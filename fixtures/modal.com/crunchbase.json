@@ -1,0 +1,23 @@
+{
+  "org": {
+    "uuid": "cb_modal_uuid",
+    "name": "Modal Labs",
+    "permalink": "modal-labs",
+    "short_description": "Serverless compute platform for AI/ML workloads",
+    "founded_year": 2021,
+    "country_code": "USA",
+    "city": "New York",
+    "operating_status": "active",
+    "homepage_url": "https://www.modal.com",
+    "linkedin_url": "https://www.linkedin.com/company/modal-labs",
+    "num_employees_enum": "11-50",
+    "category_list": ["Cloud Infrastructure", "Developer Tools", "Artificial Intelligence", "Machine Learning"]
+  },
+  "rounds": [
+    {"announced_on": "2024-03-26", "investment_type": "series_a", "raised_usd": 16000000, "post_money_valuation_usd": 250000000, "investors": ["Redpoint Ventures", "Amplify Partners", "Lux Capital"]},
+    {"announced_on": "2022-09-01", "investment_type": "seed", "raised_usd": 7000000, "post_money_valuation_usd": 60000000, "investors": ["Amplify Partners", "Lux Capital", "Definition Capital"]}
+  ],
+  "board_members_and_advisors": [
+    {"full_name": "Sridhar Ramaswamy", "title": "Advisor", "affiliated_firm": "Snowflake"}
+  ]
+}

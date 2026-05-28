@@ -1,0 +1,26 @@
+{
+  "org": {
+    "uuid": "cb_glean_uuid",
+    "name": "Glean",
+    "permalink": "glean-tech",
+    "short_description": "Enterprise AI search and assistant across company apps",
+    "founded_year": 2019,
+    "country_code": "USA",
+    "city": "Palo Alto",
+    "operating_status": "active",
+    "homepage_url": "https://www.glean.com",
+    "linkedin_url": "https://www.linkedin.com/company/glean-tech",
+    "num_employees_enum": "251-500",
+    "category_list": ["Enterprise Software", "Artificial Intelligence", "Search Engine", "SaaS"]
+  },
+  "rounds": [
+    {"announced_on": "2024-09-10", "investment_type": "series_e", "raised_usd": 260000000, "post_money_valuation_usd": 4600000000, "investors": ["Kleiner Perkins", "Lightspeed Venture Partners", "Sequoia Capital", "General Catalyst"]},
+    {"announced_on": "2024-02-27", "investment_type": "series_d", "raised_usd": 200000000, "post_money_valuation_usd": 2200000000, "investors": ["Kleiner Perkins", "Lightspeed Venture Partners", "Sequoia Capital"]},
+    {"announced_on": "2022-05-18", "investment_type": "series_c", "raised_usd": 100000000, "post_money_valuation_usd": 1000000000, "investors": ["Sequoia Capital", "Kleiner Perkins", "Lightspeed Venture Partners"]},
+    {"announced_on": "2021-04-15", "investment_type": "series_b", "raised_usd": 55000000, "post_money_valuation_usd": 525000000, "investors": ["Kleiner Perkins", "Lightspeed Venture Partners", "General Catalyst"]}
+  ],
+  "board_members_and_advisors": [
+    {"full_name": "Mamoon Hamid", "title": "Board Director", "affiliated_firm": "Kleiner Perkins"},
+    {"full_name": "Arif Janmohamed", "title": "Board Director", "affiliated_firm": "Lightspeed Venture Partners"}
+  ]
+}

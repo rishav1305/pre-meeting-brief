@@ -1,0 +1,100 @@
+{
+  "id": "spec_ramp_001",
+  "domain": "ramp.com",
+  "organization_name": "Ramp",
+  "description": "Ramp is a corporate spend management platform combining corporate cards, bill pay, expense management, procurement, travel, and accounting integrations into a single product. Targets fast-growing businesses (Series A through enterprise) and emphasizes automation and time savings over traditional rewards.",
+  "industries": ["Fintech", "SaaS", "Finance"],
+  "sub_industries": ["Spend Management", "Corporate Cards", "Accounts Payable"],
+  "operating_status": "active",
+  "highlights": [
+    "top_tier_investors",
+    "headcount_surge",
+    "strong_revenue_growth",
+    "new_product_launch"
+  ],
+  "new_highlights": [
+    "ramp_ai_agents_2026q1",
+    "treasury_product_launch_2025q4"
+  ],
+  "growth_stage": "late_stage",
+  "founded_year": 2019,
+  "employee_count": 1000,
+  "employee_count_range": "1001-5000",
+  "revenue_estimate_usd": 500000000,
+  "investors": [
+    "Founders Fund",
+    "Stripe",
+    "Thrive Capital",
+    "GIC",
+    "Sands Capital",
+    "Sequoia Capital",
+    "D1 Capital Partners",
+    "Khosla Ventures"
+  ],
+  "funding": {
+    "total_raised_usd": 1200000000,
+    "last_round_type": "series_d",
+    "last_round_date": "2024-04-04",
+    "last_round_usd": 150000000,
+    "post_money_valuation_usd": 13000000000,
+    "round_count": 8
+  },
+  "hq": {
+    "city": "New York",
+    "country": "US",
+    "region": "North America"
+  },
+  "tags": ["fintech", "SaaS", "B2B", "finance_workflow"],
+  "customer_focus": "b2b",
+  "customer_profile": "Venture-backed startups, mid-market companies, fast-growing enterprises",
+  "traction_highlights": "Series D at $13B valuation in April 2024. Reported $700M+ ARR; AI agent product launched Q1 2026 driving usage uplift.",
+  "certifications": ["SOC 1 Type II", "SOC 2 Type II", "PCI DSS"],
+  "technologies": ["React", "Python", "Postgres", "Stripe Issuing"],
+  "traction_metrics": {
+    "web_visits": {"latest": 3800000, "trend_3mo": {"value": 3800000, "change": 320000, "pct_change": 9.20}},
+    "linkedin_followers": {"latest": 195000, "trend_6mo": {"value": 195000, "change": 28000, "pct_change": 16.77}},
+    "employee_count": {"latest": 1000, "trend_6mo": {"value": 1000, "change": 180, "pct_change": 21.95}}
+  },
+  "web": {
+    "popularity_rank": 22000,
+    "bounce_rate": 0.36,
+    "top_country": "US",
+    "traffic_source": "Direct 49% / Search 34% / Social 8% / Referral 6% / Mail 3%"
+  },
+  "socials": {
+    "linkedin": {"url": "https://www.linkedin.com/company/ramp", "follower_count": 195000}
+  },
+  "reviews": {},
+  "founder_info": [
+    {
+      "specter_person_id": "spec_p_eric_glyman",
+      "full_name": "Eric Glyman",
+      "title": "Co-founder & CEO",
+      "linkedin_url": "https://www.linkedin.com/in/eric-glyman",
+      "prior_companies": ["Paribus"],
+      "prior_exits": ["Paribus → Capital One (2016)"]
+    },
+    {
+      "specter_person_id": "spec_p_karim_atiyeh",
+      "full_name": "Karim Atiyeh",
+      "title": "Co-founder & CTO",
+      "linkedin_url": "https://www.linkedin.com/in/karimatiyeh",
+      "prior_companies": ["Paribus"],
+      "prior_exits": ["Paribus → Capital One (2016)"]
+    }
+  ],
+  "news": [
+    {"date": "2026-03-05", "title": "Ramp launches AI agents to automate finance back-office", "url": "https://techcrunch.com/ramp-ai-agents", "publisher": "TechCrunch"},
+    {"date": "2025-11-12", "title": "Ramp rolls out treasury product to compete with Mercury and Brex", "url": "https://example.com/ramp-treasury", "publisher": "The Information"},
+    {"date": "2025-07-29", "title": "Ramp ARR reportedly tops $700M as growth accelerates", "url": "https://example.com/ramp-arr", "publisher": "Forbes"},
+    {"date": "2024-04-04", "title": "Ramp closes Series D at $13B valuation led by Founders Fund", "url": "https://example.com/ramp-series-d", "publisher": "Bloomberg"}
+  ],
+  "awards": [
+    {"name": "CNBC Disruptor 50", "org": "CNBC", "year": 2024, "rank": 8},
+    {"name": "Forbes Cloud 100", "org": "Forbes", "year": 2024, "rank": 14}
+  ],
+  "patent_count": null,
+  "it_spend": null,
+  "reported_clients": null,
+  "hiring_signals": ["headcount_surge", "engineering_hiring", "sales_hiring", "product_hiring"]
+}

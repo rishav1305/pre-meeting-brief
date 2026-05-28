@@ -1,0 +1,108 @@
+{
+  "id": "spec_glean_001",
+  "domain": "glean.com",
+  "organization_name": "Glean",
+  "description": "Glean is an enterprise AI search and assistant platform. It indexes a company's internal SaaS apps (Slack, Google Drive, Jira, Confluence, GitHub, Salesforce, ServiceNow, and 100+ more) and provides permission-aware natural-language search plus an AI assistant and agent platform on top. Founded by ex-Google search engineers.",
+  "industries": ["AI", "Enterprise Software", "SaaS"],
+  "sub_industries": ["Enterprise Search", "Knowledge Management", "AI Agents"],
+  "operating_status": "active",
+  "highlights": [
+    "top_tier_investors",
+    "headcount_surge",
+    "enterprise_logo_added",
+    "ai_native"
+  ],
+  "new_highlights": [
+    "agent_platform_launch_2025q4",
+    "series_e_extension_2025"
+  ],
+  "growth_stage": "late_stage",
+  "founded_year": 2019,
+  "employee_count": 500,
+  "employee_count_range": "501-1000",
+  "revenue_estimate_usd": 200000000,
+  "investors": [
+    "Kleiner Perkins",
+    "Sequoia Capital",
+    "Lightspeed Venture Partners",
+    "General Catalyst",
+    "Coatue",
+    "Citi Ventures",
+    "ICONIQ Growth",
+    "Latitude Capital"
+  ],
+  "funding": {
+    "total_raised_usd": 615000000,
+    "last_round_type": "series_e",
+    "last_round_date": "2024-09-10",
+    "last_round_usd": 260000000,
+    "post_money_valuation_usd": 4600000000,
+    "round_count": 6
+  },
+  "hq": {
+    "city": "Palo Alto",
+    "country": "US",
+    "region": "North America"
+  },
+  "tags": ["AI", "enterprise_search", "knowledge_management", "SaaS"],
+  "customer_focus": "b2b",
+  "customer_profile": "Mid-market and enterprise customers (1000+ employees) across tech, finance, and pharma",
+  "traction_highlights": "Series E at $4.6B post in September 2024. Agent platform launched late 2025. Added Databricks, Pinterest, and several Fortune 500 logos in 2025-26.",
+  "certifications": ["SOC 2 Type II", "ISO 27001", "HIPAA"],
+  "technologies": ["Vector Search", "LLMs", "Permissions Graph", "Knowledge Graph"],
+  "traction_metrics": {
+    "web_visits": {"latest": 1200000, "trend_3mo": {"value": 1200000, "change": 180000, "pct_change": 17.65}},
+    "linkedin_followers": {"latest": 78000, "trend_6mo": {"value": 78000, "change": 22000, "pct_change": 39.29}},
+    "employee_count": {"latest": 500, "trend_6mo": {"value": 500, "change": 130, "pct_change": 35.14}}
+  },
+  "web": {
+    "popularity_rank": 58000,
+    "bounce_rate": 0.39,
+    "top_country": "US",
+    "traffic_source": "Direct 47% / Search 36% / Social 8% / Referral 6% / Mail 3%"
+  },
+  "socials": {
+    "linkedin": {"url": "https://www.linkedin.com/company/glean-tech", "follower_count": 78000}
+  },
+  "reviews": {},
+  "founder_info": [
+    {
+      "specter_person_id": "spec_p_arvind_jain",
+      "full_name": "Arvind Jain",
+      "title": "Co-founder & CEO",
+      "linkedin_url": "https://www.linkedin.com/in/arvindjain",
+      "prior_companies": ["Google", "Rubrik"],
+      "prior_exits": ["Rubrik (IPO 2024)"]
+    },
+    {
+      "specter_person_id": "spec_p_tr_vishwanath",
+      "full_name": "T.R. Vishwanath",
+      "title": "Co-founder",
+      "linkedin_url": "https://www.linkedin.com/in/trvishwanath",
+      "prior_companies": ["Google", "Facebook"],
+      "prior_exits": []
+    },
+    {
+      "specter_person_id": "spec_p_tony_gentilcore",
+      "full_name": "Tony Gentilcore",
+      "title": "Co-founder",
+      "linkedin_url": "https://www.linkedin.com/in/tonygentilcore",
+      "prior_companies": ["Google"],
+      "prior_exits": []
+    }
+  ],
+  "news": [
+    {"date": "2026-04-09", "title": "Glean launches no-code agent builder for enterprise workflows", "url": "https://techcrunch.com/glean-agent-builder", "publisher": "TechCrunch"},
+    {"date": "2026-01-22", "title": "Glean signs Fortune 50 financial services customer in eight-figure deal", "url": "https://example.com/glean-fortune50", "publisher": "The Information"},
+    {"date": "2025-09-08", "title": "Glean ARR reportedly past $100M", "url": "https://example.com/glean-arr", "publisher": "Forbes"},
+    {"date": "2024-09-10", "title": "Glean raises $260M Series E at $4.6B valuation", "url": "https://example.com/glean-series-e", "publisher": "Reuters"}
+  ],
+  "awards": [
+    {"name": "Forbes AI 50", "org": "Forbes", "year": 2025, "rank": 11},
+    {"name": "Forbes Cloud 100", "org": "Forbes", "year": 2024, "rank": 32}
+  ],
+  "patent_count": null,
+  "it_spend": null,
+  "reported_clients": null,
+  "hiring_signals": ["headcount_surge", "engineering_hiring", "go_to_market_hiring"]
+}
