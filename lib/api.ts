@@ -10,8 +10,11 @@
  */
 function resolveApiBase(): string {
   if (process.env.NEXT_PUBLIC_API_BASE) return process.env.NEXT_PUBLIC_API_BASE;
-  if (typeof window === "undefined" && process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}/api`;
+  if (typeof window === "undefined") {
+    // VERCEL_URL is the per-deployment URL (has deployment protection on Hobby).
+    // VERCEL_PROJECT_PRODUCTION_URL is the production alias (publicly reachable).
+    const host = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
+    if (host) return `https://${host}/api`;
   }
   return "/pre-meeting-brief/api";
 }
