@@ -68,3 +68,44 @@ async def test_specter_provider_returns_none_on_miss():
     provider = SpecterProvider(fixtures_dir=FIXTURES_DIR)
     result = await provider.fetch("notinfixtures.com", hints={})
     assert result is None
+
+
+from api.providers.attio import AttioProvider
+from api.providers.crunchbase import CrunchbaseProvider
+from api.providers.pitchbook import PitchBookProvider
+
+
+@pytest.mark.asyncio
+async def test_crunchbase_provider():
+    provider = CrunchbaseProvider(fixtures_dir=FIXTURES_DIR)
+    result = await provider.fetch("anduril.com", hints={})
+    assert result is not None
+    assert result.source == "crunchbase"
+    assert result.raw["org"]["uuid"] == "cb_anduril_uuid"
+    assert len(result.normalized["rounds"]) == 4
+
+
+@pytest.mark.asyncio
+async def test_pitchbook_provider():
+    provider = PitchBookProvider(fixtures_dir=FIXTURES_DIR)
+    result = await provider.fetch("anduril.com", hints={})
+    assert result is not None
+    assert result.source == "pitchbook"
+    assert result.normalized["post_money_valuation_usd"] == 14000000000
+
+
+@pytest.mark.asyncio
+async def test_attio_provider():
+    provider = AttioProvider(fixtures_dir=FIXTURES_DIR)
+    result = await provider.fetch("anduril.com", hints={})
+    assert result is not None
+    assert result.source == "attio"
+    assert len(result.normalized["interactions"]) >= 3
+
+
+@pytest.mark.asyncio
+async def test_provider_returns_none_when_fixture_missing():
+    for cls in (CrunchbaseProvider, PitchBookProvider, AttioProvider):
+        provider = cls(fixtures_dir=FIXTURES_DIR)
+        result = await provider.fetch("notinfixtures.com", hints={})
+        assert result is None
