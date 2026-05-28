@@ -26,7 +26,7 @@ from typing import Any
 
 from sqlalchemy import select
 
-from api.db.models import Company, EtlRunLog, PreMeetingBrief
+from api.db.models import Company, DataQualityFlag, EtlRunLog, PreMeetingBrief
 from api.db.session import SessionLocal
 from api.pipeline.state import BriefState, DQFlag, ToolCall
 from api.providers.attio import AttioProvider
@@ -267,6 +267,22 @@ async def render_and_persist(state: BriefState) -> BriefState:
         brief.pre_meeting_brief_link = (
             f"/pre-meeting-brief/briefs/{brief.brief_id}"
         )
+
+        # Persist data-quality flags emitted by merge_canonical + DQ agent.
+        # Flags are first-class observability artifacts (see approach.md §3, §7.5)
+        # and power the AuditPanel's FlagsTeaser.
+        for flag in state.data_quality_flags:
+            session.add(DataQualityFlag(
+                run_id=state.run_id,
+                company_id=state.company_id,
+                field=flag.field,
+                issue=flag.issue,
+                severity=flag.severity,
+                source_a=flag.source_a,
+                value_a=str(flag.value_a) if flag.value_a is not None else None,
+                source_b=flag.source_b,
+                value_b=str(flag.value_b) if flag.value_b is not None else None,
+            ))
 
         if state.run_id is not None:
             run = await session.get(EtlRunLog, state.run_id)

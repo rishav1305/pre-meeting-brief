@@ -37,6 +37,7 @@ from uuid import UUID
 
 from langgraph.graph import END, StateGraph
 
+from api.distribution.calendar_writeback import distribute_brief
 from api.pipeline.agents.data_quality import data_quality_agent
 from api.pipeline.agents.qualification import qualification_agent
 from api.pipeline.agents.research import research_agent
@@ -64,6 +65,24 @@ async def _merge_node(state: BriefState) -> BriefState:
     monkey-patch it via ``patch("api.pipeline.graph._merge_node", new=...)``.
     """
     return merge_canonical(state)
+
+
+async def _distribute_node(state: BriefState) -> BriefState:
+    """Append a Google Calendar writeback attempt to the brief's distribution log.
+
+    No-op if the brief never got persisted (synthesis failed). Never raises —
+    distribution is best-effort observability, not a pipeline-critical step.
+    """
+    if state.brief_id is None:
+        return state
+    try:
+        await distribute_brief(state.brief_id)
+    except Exception:  # noqa: BLE001
+        # Swallow — render_and_persist already closed the run log as 'complete'
+        # and the brief itself is reachable via its URL. A failed distribution
+        # log shouldn't fail the run.
+        pass
+    return state
 
 
 def _wrap_node(node_name: str, fn):
@@ -127,6 +146,7 @@ def build_graph():
     graph.add_node("data_quality", _wrap_node("data_quality", data_quality_agent))
     graph.add_node("synthesise", _wrap_node("synthesise", synthesise_brief))
     graph.add_node("render_persist", _wrap_node("render_persist", render_and_persist))
+    graph.add_node("distribute", _wrap_node("distribute", _distribute_node))
 
     graph.set_entry_point("resolve_company")
     graph.add_edge("resolve_company", "qualification")
@@ -140,7 +160,8 @@ def build_graph():
     graph.add_edge("merge", "data_quality")
     graph.add_edge("data_quality", "synthesise")
     graph.add_edge("synthesise", "render_persist")
-    graph.add_edge("render_persist", END)
+    graph.add_edge("render_persist", "distribute")
+    graph.add_edge("distribute", END)
 
     return graph.compile()
 

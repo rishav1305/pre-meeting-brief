@@ -2,9 +2,16 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.db.models import Company, People, PreMeetingBrief, TractionMetrics
+from api.db.models import (
+    Company,
+    DataQualityFlag,
+    People,
+    PreMeetingBrief,
+    TractionMetrics,
+)
 from api.db.session import get_session
 
 router = APIRouter()
@@ -22,6 +29,28 @@ async def get_brief(
     company = await session.get(Company, brief.company_id)
     people = await session.get(People, brief.company_id)
     traction = await session.get(TractionMetrics, brief.company_id)
+
+    # Pull DQ flags written by render_and_persist (matched on run_id, since
+    # the brief itself is run-pinned and so are the flags). Severity ordering
+    # is high → medium → low so the AuditPanel shows the worst first.
+    severity_rank = {"high": 0, "medium": 1, "low": 2}
+    flag_rows = (
+        await session.scalars(
+            select(DataQualityFlag).where(DataQualityFlag.run_id == brief.run_id)
+        )
+    ).all() if brief.run_id else []
+    flags_payload = [
+        {
+            "field": f.field,
+            "issue": f.issue,
+            "severity": f.severity,
+            "source_a": f.source_a,
+            "value_a": f.value_a,
+            "source_b": f.source_b,
+            "value_b": f.value_b,
+        }
+        for f in sorted(flag_rows, key=lambda r: severity_rank.get(r.severity, 99))
+    ]
 
     return {
         "brief_id": str(brief.brief_id),
@@ -62,4 +91,6 @@ async def get_brief(
         "audit_company": brief.audit_company,
         "audit_people": brief.audit_people,
         "audit_traction_metrics": brief.audit_traction_metrics,
+        "data_quality_flags": flags_payload,
+        "distribution_log": brief.distribution_log or [],
     }

@@ -197,19 +197,11 @@ function AuditSubsection({
 }
 
 function FlagsTeaser({ flags }: { flags: DataQualityFlag[] | undefined }) {
-  // Today the DQ-flag table is never written by the pipeline (flags live only
-  // in run-state). Surface a tasteful placeholder pointing at /runs so the
-  // reader knows where conflict telemetry will live.
   if (!flags || flags.length === 0) {
     return (
       <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-600">
-        <span className="font-medium text-slate-700">Data quality:</span> no conflicts surfaced for
-        this brief. (Per-run conflict flags are persisted to{" "}
-        <code>data_quality_flags</code> when the Data Quality Agent fires —{" "}
-        <a className="underline" href="/pre-meeting-brief/runs">
-          /runs
-        </a>{" "}
-        will surface them once the table is being written. Phase 3 stretch.)
+        <span className="font-medium text-slate-700">Data quality:</span> no conflicts surfaced
+        for this brief — all source values within tolerance per the priority chains.
       </div>
     );
   }

@@ -126,4 +126,8 @@ def message_for(node: str, state: Any) -> str:
         return f"Claude tool_use synthesis → thesis_fit score={score or '?'}/5"
     if node == "render_persist":
         return f"Persisted brief_id {str(state.brief_id or '')[:8]}…"
+    if node == "distribute":
+        if state.brief_id is None:
+            return "Distribution skipped — no brief to attach"
+        return f"Calendar writeback queued for {state.partner}'s {state.meeting_date} event"
     return ""
