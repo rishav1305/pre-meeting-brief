@@ -31,6 +31,7 @@ from api.pipeline.prompts import (
     CRITIQUE_PROMPT,
     SYSTEM_PROMPT,
     build_brief_prompt,
+    load_firm_context,
 )
 from api.pipeline.state import BriefState, ToolCall
 
@@ -288,11 +289,18 @@ async def synthesise_brief(state: BriefState) -> BriefState:
     """
     started = time.perf_counter()
     user_message = build_brief_prompt(state)
+    # Fetch the firm config (defaults to Renegade for the POC) so the
+    # thesis-fit scoring is parameterized rather than hardcoded in source.
+    firm = await load_firm_context()
     # SYSTEM_PROMPT contains literal braces in the JSON schema description
     # (e.g. "{ score: 1-5, reasoning, bear_case }"), so we use targeted
     # string replacement rather than str.format.
     system_prompt = (
         SYSTEM_PROMPT
+        .replace("{firm_name}", firm.firm_name)
+        .replace("{thesis_label}", firm.thesis_label)
+        .replace("{thesis_description}", firm.thesis_description)
+        .replace("{fit_rubric}", firm.fit_rubric)
         .replace("{partner}", state.partner)
         .replace("{company_name}", state.company_name)
         .replace("{meeting_date}", state.meeting_date.isoformat())
@@ -335,7 +343,13 @@ async def synthesise_brief(state: BriefState) -> BriefState:
     # ── Stage 2: CRITIQUE (best-effort; skip on failure) ──────────────────
     critique: dict | None = None
     if not _budget_exhausted():
-        critique_user = CRITIQUE_PROMPT + "\n\nDRAFT:\n" + json.dumps(draft)
+        critique_user = (
+            CRITIQUE_PROMPT
+            .replace("{firm_name}", firm.firm_name)
+            .replace("{thesis_label}", firm.thesis_label)
+            + "\n\nDRAFT:\n"
+            + json.dumps(draft)
+        )
         call_started = time.perf_counter()
         raw_text, error = _call_anthropic(
             system=None,

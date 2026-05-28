@@ -11,6 +11,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     DateTime,
     Float,
@@ -261,9 +262,35 @@ class PreMeetingBrief(Base):
     audit_people: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
     audit_traction_metrics: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
 
+    # Append-only log of distribution attempts. One record per channel
+    # (calendar / slack / attio / gmail) per attempt: {channel, target,
+    # status, payload, attempted_at, error}. POC mocks the Google Calendar
+    # call; the payload is the same one a real API call would carry.
+    distribution_log: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+
     generated_ts: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class FirmConfig(Base):
+    """Per-firm configuration for thesis-aware brief synthesis.
+
+    A single-row default seeds Renegade for the POC. Production multi-tenancy
+    (see approach.md §10) partitions all canonical entities by firm_id and
+    reads the synthesis system prompt from this row by firm_id.
+    """
+    __tablename__ = "firm_config"
+
+    firm_id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    thesis_label: Mapped[str] = mapped_column(String(128), nullable=False)
+    thesis_description: Mapped[str] = mapped_column(String, nullable=False)
+    fit_rubric: Mapped[str] = mapped_column(String, nullable=False)
+    is_default: Mapped[bool] = mapped_column(Boolean(), default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
