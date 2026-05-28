@@ -40,6 +40,7 @@ This is a take-home submission to **Capital Numbers** for the **AI-Native Tech L
 | `phase-1` | Schema (DD-mirror), 6 company fixtures, 4 providers, standalone specter-mcp server, seed script, agenda + brief reader, /approach renderer | — |
 | `phase-2` | LangGraph orchestrator + 4 real agents (Qualification/Research/DQ/Synthesis), real Anthropic web_search, forced tool_use synthesis, admin trigger + UI | — |
 | `phase-3` | Live per-node progress tracking, partner switcher, calendar-view agenda with non-uniform density, nested TOC + scroll-spy, interactive /pipeline (4 tabs), rebuilt audit panel, recent-runs panel on /admin | `phase-3` HEAD |
+| `phase-4` (in-progress) | Senior-architect review pass: closed reviewer-flagged gaps before submission — `firm_config` parameterization, `data_quality_flags` persistence, Vercel Cron + `/api/triggers/scan` trigger detection, Google Calendar distribution stub via `pre_meeting_brief.distribution_log`, trust-boundary tagging on web content, `eval/` rubric + golden criteria for 3 companies, confidence-dot tier re-alignment, full doc-fidelity sweep on `docs/approach.md`. See `docs/review-gaps.md` for the gap log driving this. | uncommitted |
 
 Total commits on master: ~50+. See `git log --oneline` for the full sequence.
 
@@ -156,12 +157,16 @@ Tables in `canonical.*` (no actual schema prefix — flat in Postgres):
 - **`pre_meeting_brief`** — output table; thesis_fit + 4 prose fields + 3 audit columns (audit_company, audit_people, audit_traction_metrics) — frozen at brief-gen time
 - **`calendar_events`** — partner, company_domain, meeting_date, attendees
 - **`etl_run_log`** — run_id, company_id, status (running|complete|failed|merged), started_at, completed_at, error_message, **current_node**, **node_history (JSONB)** ← Phase 3 added
-- **`data_quality_flags`** — flag rows from merge (table exists; not currently written to by the pipeline — DQ agent emits in-memory only. Phase 3 stretch to wire this.)
+- **`data_quality_flags`** — flag rows from merge. **Phase 4: now persisted** by `render_and_persist` for every detected conflict; brief reader's FlagsTeaser surfaces them.
 - **`source_payloads`** — raw layer (company_id, source, raw, pulled_at) — combined for all 4 sources
+- **`firm_config`** ← Phase 4 added — `firm_id, name, thesis_label, thesis_description, fit_rubric, is_default`. Seeded with Renegade as the default; `api.pipeline.prompts.load_firm_context()` reads from it to parameterize the synthesis system prompt.
+- **`pre_meeting_brief.distribution_log`** ← Phase 4 added (JSONB on existing table) — append-only log of distribution attempts (channel, target, status, payload, attempted_at).
 
 Migrations:
 - `0001_initial_schema.py` — all 8 tables
 - `0002_etl_run_log_progress.py` — adds `current_node` + `node_history`
+- `0003_firm_config.py` — adds `firm_config` table + seeds Renegade
+- `0004_brief_distribution.py` — adds `distribution_log` JSONB column to `pre_meeting_brief`
 
 ---
 
@@ -204,6 +209,7 @@ pre-meeting-brief/
 ├── README.md                              ← Short project summary
 ├── docs/
 │   ├── approach.md                        ← THE submission deliverable (12 pages)
+│   ├── review-gaps.md                     ← Phase 4: senior-architect critique + action plan
 │   └── superpowers/plans/
 │       ├── 2026-05-28-pmb-foundation.md   ← Phase 0 + 1 plan
 │       └── 2026-05-28-pmb-phase-2.md      ← Phase 2 plan
@@ -262,7 +268,14 @@ pre-meeting-brief/
 │   │       ├── research.py
 │   │       ├── data_quality.py
 │   │       └── synthesis.py
-│   └── seeds/seed.py                      ← One-shot DB seed (companies + Devon's calendar + Anduril brief)
+│   ├── seeds/seed.py                      ← One-shot DB seed (companies + Devon's calendar + Anduril brief)
+│   └── distribution/
+│       ├── __init__.py
+│       └── calendar_writeback.py          ← Phase 4: Google Calendar payload builder + log-only stub
+├── eval/                                  ← Phase 4: brief-quality eval
+│   ├── golden/criteria.json               ← Hand-curated criteria for Anduril, Hadrian, Mercury
+│   ├── rubric.py                          ← Haiku-as-judge with forced tool_use submit_eval_scores
+│   └── runner.py                          ← CLI: `python -m eval.runner [--company X]`
 ├── mcp_servers/
 │   └── specter_mcp/
 │       ├── server.py                      ← FastMCP with fetch_company tool
@@ -378,15 +391,17 @@ These came up in conversation and got locked in — important for not re-litigat
 
 | Item | Why deferred |
 |---|---|
-| Vercel Cron daily 06:00 UTC trigger | Manual trigger covers the demo; cron is invisible polish |
-| `data_quality_flags` table actually populated by the pipeline | DQ agent emits in-memory; never persisted. AuditPanel has the surface ready (FlagsTeaser) for when this lands |
-| Multi-tenancy (`firm_id` partitioning) | Single-tenant assumption is explicit in the approach doc as production roadmap |
+| ~~Vercel Cron daily 06:00 UTC trigger~~ | **Built in Phase 4** — `/api/triggers/scan` + cron config in `vercel.json` |
+| ~~`data_quality_flags` table actually populated by the pipeline~~ | **Built in Phase 4** — `render_and_persist` writes rows; brief API returns them; FlagsTeaser surfaces them |
+| Full multi-tenancy (`firm_id` partitioning on all canonical tables + row-level security) | Phase 4 added `firm_config` table + parameterized system prompt — the framing seam is in place. `firm_id` column on canonical entities + RLS is still production roadmap |
 | Brief feedback loop (thumbs up/down → `brief_feedback` table) | Schema exists in plan; UI not built |
-| Eval rubric (Haiku-scored on 5 axes against golden set) | Production-roadmap item |
+| ~~Eval rubric (Haiku-scored on 5 axes against golden set)~~ | **Built in Phase 4** — `eval/` with Haiku-as-judge, golden criteria for 3 companies, CLI runner |
+| Real Google Calendar OAuth dispatch | Phase 4 wired the payload-building + log-only stub on `pre_meeting_brief.distribution_log`. Production flip = OAuth + flip `_LOG_ONLY=False` in `api/distribution/calendar_writeback.py` |
 | PDF / Google Doc export | Spec'd as cuttable in Phase 1; HTML print stylesheet is the substitute |
-| Attio writeback (folder link to CRM) | Stub link in DB; no API call |
+| Attio CRM writeback (folder link on company record) | Stub link in DB; no API call. Same architectural pattern as the calendar writeback — add `api/distribution/attio_writeback.py` |
 | Live tool_call streaming via SSE | Polling every 2s is good enough for 60-180s pipelines |
 | GitHub auto-deploy from pre-meeting-brief repo to Vercel | Vercel GitHub app installation never succeeded; manual `vercel deploy` works fine |
+| Real prompt-injection HTML sanitization + output-side regex guard | Phase 4 added trust-boundary tagging at the prompt level; production also needs input sanitization before tagging and output-side red-team eval |
 
 If the reviewer asks "what's next?", point them at the **Production roadmap** section of `docs/approach.md` §10 — that's the canonical answer.
 
@@ -417,4 +432,4 @@ If the reviewer asks "what's next?", point them at the **Production roadmap** se
 
 ---
 
-*Last updated 2026-05-28 by Claude. Session was 24+ hours of intense collaboration from brainstorming through Phase 3 polish; the user is moving to a different device to continue.*
+*Last updated 2026-05-28 by Claude. Phase 4 session closed senior-architect-review gaps before the 2026-05-29 submission: doc fidelity, Assignment Re-read, firm_config parameterization, data_quality_flags persistence, Vercel Cron + scan endpoint, Google Calendar distribution stub, trust-boundary tagging, eval rubric, confidence-dot re-alignment. Migrations `0003_firm_config.py` and `0004_brief_distribution.py` need `alembic upgrade head` against the live DB; deploy via `vercel deploy --prod --yes` to ship.*

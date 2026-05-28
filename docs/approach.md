@@ -10,9 +10,54 @@
 
 ---
 
+## Assignment — verbatim re-read
+
+The email defines the deliverable as a **written approach** that addresses four workflow components. I quote them here so the rest of the document can be measured against them directly:
+
+> 1. **Trigger Mechanism**: How the system detects a new meeting with a company not engaged with in the last three months.
+> 2. **Data Integration**: Your strategy for pulling and merging data from CRM (Attio), 3rd party sources (Specter, Crunchbase), and the web.
+> 3. **Synthesis**: How you would use LLMs to generate a structured brief that includes demographics, key personnel, and market deep dives.
+> 4. **Distribution**: The process for automatically attaching the final brief to a daily agenda.
+
+The email also says: *"Linear Tickets: Please proceed with your written approach based on the primary brief and architecture diagram provided in the main file."* I read this as **Linear Tickets are not assumed accessible to the reviewer evaluating my submission, and architectural choices should be derivable from the primary brief + architecture diagram + Data Dictionary alone**. Where the rest of this document references ticket IDs, they are after-the-fact corroboration of the same conclusions, not the basis for them.
+
+### How this document addresses each workflow component
+
+| Workflow component (verbatim from email) | Where it is addressed | Status in the POC today |
+|---|---|---|
+| **Trigger Mechanism** — detect new meeting + 3-month rule | §4 (architecture), §5.1 (Qualification Agent), `GET /api/triggers/scan` | Built (fixture-backed) — Vercel Cron fires daily at 06:00 UTC, walks `canonical.calendar_events` for the next 24h, skips events that already have a brief, kicks the pipeline (which then runs the 90-day qualification gate). Calendar *source* is still fixture-seeded for the POC; OAuth-driven Google Calendar / Outlook integration is the production swap (see §10). |
+| **Data Integration** — Attio + Specter + Crunchbase + web | §6 (MCP boundary), §7.4 (priority chains), §7.5 (conflict rules) | Built — 4 providers (Attio, Specter, Crunchbase, PitchBook) wired through a common Protocol with deterministic merge + conflict detection. Web context via Anthropic `web_search` tool inside the Research Agent. |
+| **Synthesis** — LLM-generated brief with demographics + personnel + market | §5.4 (Synthesis Agent), §8 (system prompt, schema, UX) | Built — Sonnet 4.6 forced `tool_use` with draft→critique→revise loop; brief includes Snapshot (demographics), Team (personnel), Market deep-dive and Industry deep-dive sections. |
+| **Distribution** — attach to daily agenda | §4 (architecture diagram), `api/distribution/calendar_writeback.py` | Built as a logged stub — after `render_and_persist`, the pipeline constructs the exact Google Calendar Events.patch() payload (calendar_id, event_id, append-block with brief URL + timestamp) and persists it to `pre_meeting_brief.distribution_log`. A "Distribution → Google Calendar: Payload built (POC mock)" badge renders on the brief reader. The HTTP dispatch is deferred to production-time OAuth (a one-flag flip from `_LOG_ONLY=True` to `False`). Slack/Attio/Gmail channels are roadmap (§10). |
+
+### Architectural choices justified from the primary brief alone
+
+The reviewer should be able to read just the email and the architecture diagram and arrive at these same calls:
+
+- **A graph orchestrator (not chained function calls)** is needed because the brief's flow fans out across multiple sources (Attio + Specter + Crunchbase + web), merges them, then synthesizes — a stateful DAG with shared `BriefState`, not a single request/response. LangGraph is one credible implementation; Prefect, Temporal, or a hand-rolled async DAG runner would also work. The choice of LangGraph specifically is for ecosystem maturity around LLM tool-call orchestration, not because a ticket prescribed it.
+- **An MCP boundary on source providers** is the right abstraction because each source is independently authenticated, independently rate-limited, and the same servers should be reusable from Claude Desktop for ad-hoc partner lookups outside the app. MCP is the emerging standard for this exact shape.
+- **A deterministic merge with explicit priority chains** is needed because the Data Dictionary specifies source priority per field. Doing this in an LLM would erode reproducibility.
+- **An agentic Synthesis layer with self-critique** is needed because the brief is a judgment artifact — a partner reading it expects calibrated language, sharp questions, and a tight narrative, none of which a single-shot LLM call reliably produces.
+- **Conflict detection at merge time** is needed because three sources of structured data will disagree. The DD's source priority resolves which value wins for the brief; the conflicts themselves are first-class data the partner should see.
+
+### Scope expansions beyond the four-component spec (and why)
+
+| Addition | Rationale |
+|---|---|
+| **PitchBook as a fourth source provider** | The email lists Specter and Crunchbase; the Data Dictionary's source-priority chains reference PitchBook for funding fields (`total_raised_usd`, `last_round_*`, `post_money_valuation_usd`). I treat the DD as the schema of record. Worth naming the discrepancy explicitly: if PitchBook is unavailable in production, the priority chains gracefully degrade to Specter and Crunchbase. |
+| **`thesis_fit { score, reasoning, bear_case }` in the brief schema** | The brief is for a specific VC client (Renegade) with a stated thesis. A pre-meeting brief that does not score against the firm's thesis is doing half the job. For multi-tenant production, the rubric becomes a per-firm config (see §10 and the `firm_config` work). |
+| **`key_engagement_questions` and `prior_engagement` sections** | These come from reading the brief's intent ("refresh memory, unified perspective"). A partner about to walk into a meeting wants the 3-5 sharpest questions to ask and a timeline of prior interactions. The email's "demographics + personnel + market" is the minimum; a useful brief includes both. |
+| **`new_highlights` lead in the Snapshot** | The DD's `traction_metrics` sheet distinguishes `highlights` from `new_highlights`. The latter exist precisely so the brief can answer "what changed since the partner last looked." Treating new signals as the lead is a direct consequence of the schema. |
+
+### What is still owed against the four components
+
+The gap is concentrated in Trigger and Distribution. Both are tracked in `docs/review-gaps.md` and are the next two engineering pushes (`firm_config` parameterization, calendar-distribution stub, Vercel-Cron scan endpoint). The Synthesis and Data Integration components are built end-to-end and demoable on the live URL.
+
+---
+
 ## 1. Summary
 
-This is a take-home submission for the **Capital Numbers AI-Native Tech Lead** role. The assignment brief — a pre-meeting brief automation system — references **Renegade Capital** as the example VC client (their thesis "Markets That Matter," their data dictionary, their Linear ticket structure). The platform is therefore *designed for* Renegade and *delivered to* Capital Numbers as the architecture-and-build deliverable. Throughout this document, "the firm" refers to Renegade as the demo client; "the reviewer" refers to Capital Numbers' hiring panel.
+This is a take-home submission for the **Capital Numbers AI-Native Tech Lead** role. The assignment brief — a pre-meeting brief automation system — references **Renegade Capital** as the example VC client (their thesis "Markets That Matter," their data dictionary). The platform is therefore *designed for* Renegade and *delivered to* Capital Numbers as the architecture-and-build deliverable. Throughout this document, "the firm" refers to Renegade as the demo client; "the reviewer" refers to Capital Numbers' hiring panel.
 
 Build an automated pre-meeting brief platform for Renegade Capital partners. Triggered on the first meeting with a company within a rolling 3-month window. Pulls structured data from CRM (Attio) and third-party sources (Specter, Crunchbase, PitchBook), fetches live web context via Anthropic's `web_search` tool, merges with explicit source-priority rules from the data dictionary, and runs an agentic synthesis loop tuned to Renegade's "Markets That Matter" thesis. The resulting brief — a tiered dashboard with confidence-marked facts and a click-through audit panel — is surfaced on the partner's daily agenda.
 
@@ -31,6 +76,8 @@ Build an automated pre-meeting brief platform for Renegade Capital partners. Tri
 ---
 
 ## 2. Reading the Inputs
+
+> **Note on Linear Tickets**: the assignment email instructs candidates to *"proceed with your written approach based on the primary brief and architecture diagram provided in the main file"* and treats the Linear Tickets sub-link as not necessarily accessible. The Assignment Re-read section above commits the architecture in §4–9 to being derivable from `Pre Meeting Brief.docx` + `Data Dictionary.xlsx` alone. The Linear Tickets row in the table below records what was *additionally* available to me during the build, used here as corroboration of the same conclusions — not as the basis for any architectural decision.
 
 Three artifacts, three layers of the same system (the architecture diagram is embedded in `Pre Meeting Brief.docx`, not a separate file). Read together they triangulate the architecture; read separately each has gaps.
 
@@ -92,10 +139,10 @@ The spec is a strong starting point. Mapped against production realities it has 
 
 ### D. Quality / Feedback (process)
 
-19. **No eval mechanism.** → *Haiku-scored rubric on 5 axes (factual accuracy, prior-engagement coherence, question sharpness, citation discipline, length discipline). Scored offline on a golden set. Stretch.*
+19. **No eval mechanism.** → *Built — `eval/` ships a Haiku-as-judge rubric on 5 axes (factual_accuracy, prior_engagement_coherence, question_sharpness, citation_discipline, language_calibration), scored 0–5 each via forced tool_use. Golden criteria live in `eval/golden/criteria.json` for 3 companies (Anduril, Hadrian, Mercury) covering thesis-fit-positive and thesis-fit-negative cases. CLI: `python -m eval.runner [--company X]`.*
 20. **No feedback capture.** → *Lightweight 👍/👎 + freetext per brief, persisted to `brief_feedback`. Feeds the eval set over time.*
 21. **No model-selection or cost policy.** → *Sonnet 4.6 for synthesis (one expensive call), Haiku 4.5 for cheap pre-processing (qualification, eval). Budget envelope: target < $0.20/brief.*
-22. **No agent loop-bounding.** → *Each agent has `max_iterations=5`, `max_tool_calls=15`, hard wall-clock `120s`. Enforced via Claude Agent SDK hooks.*
+22. **No agent loop-bounding.** → *Per-agent wallclocks tuned to the work each does: qualification 30s, research 60s, synthesis 540s (proxy-absorbing — see §1 latency note). Tool-call counts capped per agent. Enforced via direct `timeout=` on the Anthropic SDK calls and wallclock checks in the synthesis revise loop.*
 
 ---
 
@@ -189,7 +236,7 @@ The spec is a strong starting point. Mapped against production realities it has 
   Auth (POC):       Public read; admin trigger password-gated
   Auth (prod):      Firm SSO, partner-cohort scoping
   Secrets:          Vercel env (POC); Vault/Secrets Mgr (prod)
-  Eval (stretch):   Haiku-scored rubric on 5 axes, golden set
+  Eval:             Haiku-as-judge on 5 axes, golden criteria for 3 companies
 ```
 
 ### 4.1 POC additions over the original v1 spec
@@ -210,11 +257,11 @@ The POC is intentionally lean — single-tenant, fixture-backed sources, Vercel-
 |---|---|---|
 | Trigger | Vercel Cron (daily 06:00 UTC) + manual button on `/admin` | Google OAuth + Google Calendar push API (event-driven; brief generated within minutes of meeting being scheduled, not on a fixed daily sweep) |
 | Source providers | MCP servers reading fixtures from disk | MCP servers calling real APIs — Specter REST, Crunchbase Snowflake data share, PitchBook CSV upload pipeline, Attio API |
-| LLM access | Anthropic API direct | Same + per-firm cost / rate budgets + fallback to Haiku on Sonnet saturation |
+| LLM access | Anthropic SDK pointed at the LiteLLM proxy at `api.mercury.weather.com/litellm` (the corporate gateway available for this POC) | Anthropic API direct, per-firm cost / rate budgets, fallback to Haiku on Sonnet saturation |
 | Auth | Public read; admin trigger gated by `ADMIN_PASSWORD` | Firm SSO (Okta / Auth0 / Google Workspace) + partner-cohort RBAC on briefs |
 | Storage | Vercel Postgres single instance | Postgres primary + read replica for hot queries + Snowflake for analytics + S3 for raw payload archive |
 | Distribution | URL on the agenda page (HTML, print-stylesheet substitutes for PDF) | URL + Attio CRM writeback (folder link on company record) + Slack daily digest + Gmail attachment + mobile-friendly view |
-| Eval | Stretch — Haiku-scored rubric on 5 axes against a small golden set | Continuous eval with growing golden set + periodic Sonnet retro on low-scored briefs + feedback loop wired into prompt-version-control |
+| Eval | Haiku-as-judge rubric on 5 axes, golden criteria for 3 companies in `eval/golden/criteria.json`, CLI runner writing timestamped JSON reports | Continuous eval against growing golden set + CI hook on every prompt-version change + Sonnet retro on lowest-scoring briefs + feedback-driven prompt versioning |
 | Tenancy | Single-tenant (one firm: Renegade) | Multi-tenant with `firm_id` partitioning + Postgres row-level security |
 | Secrets | Vercel env vars | HashiCorp Vault or AWS Secrets Manager with rotation policy |
 | Observability | `etl_run_log` + `data_quality_flags` + console logs | OpenTelemetry traces on every agent tool call + latency percentiles per provider + cost-per-brief tracking + SLA-breach alerts |
@@ -263,7 +310,7 @@ The original spec is a heuristic DAG of pure functions with one LLM call at the 
 - **Tools**: `get_canonical_context`, `web_search` (additional targeted queries during synthesis)
 - **Pattern**: draft → self-critique → revise. The critique step is a separate Claude call asking *"Where is this brief weak? What questions wouldn't the partner be able to answer from this? Where is a claim insufficiently cited?"* Revision incorporates the critique.
 - **Output**: structured JSON per `BriefOutput` schema, including `thesis_fit`
-- **Loop bound**: `max_iterations=3` critique-revise cycles, `wallclock=90s`
+- **Loop bound**: `max_iterations=3` critique-revise cycles. Wallclock envelope set at `540s` in the implementation (`_WALLCLOCK_BUDGET_S`) to absorb the corporate proxy's slower token throughput; on direct Anthropic the same loop typically lands in under 90s.
 
 ### 5.5 Deterministic core
 
@@ -321,7 +368,7 @@ class BriefState(BaseModel):
 
 Stateless HTTP endpoints make sense at the API layer (request comes in, response goes out, no memory). Pipeline orchestration is different — it is a stateful workflow with intermediate persistence and explicit handoffs between specialized nodes and agents. Pydantic-backed shared state is the right primitive; the stateless API endpoints sit *on top* of this stateful pipeline.
 
-**Claude Agent SDK patterns** for the agent loops: sub-agents (so each agent has its own context window), hooks for tool-call logging and audit trail, structured output via Pydantic schemas. The SDK's sub-agent pattern lets the Research Agent run with its own context, keeping the Synthesis Agent's prompt clean.
+**Agent loop scaffolding** is built on the Anthropic Python SDK directly (forced `tool_use` for structured output, per-call `timeout=`, explicit revise-loop wallclock). The patterns are the same ones the Claude Agent SDK formalizes (sub-agents-per-task, structured Pydantic outputs, tool-call audit) — implemented here without the SDK dependency so the proxy-routed setup stays controllable. Production swap to `claude-agent-sdk` is a one-component change once the hosted environment is fixed.
 
 ---
 
@@ -525,9 +572,11 @@ type BriefOutput = {
 ### 8.3 Confidence UX
 
 - **Inline confidence dots** next to every fact:
-  - 🟢 Green: 3+ sources agree
-  - 🟡 Yellow: 1-2 sources, or single source flagged as modeled
-  - 🔴 Red: single uncorroborated source
+  - 🟢 Green: 2+ independent sources agree (e.g., Specter + Crunchbase both report the same founded_year). For funding fields where PitchBook, Specter, and Crunchbase all contribute, a 3-source agreement is the strongest signal but not required for green.
+  - 🟡 Yellow: 1 source, or modeled / estimated value (e.g., Specter's revenue_estimate, which the DD marks as modeled)
+  - 🔴 Red: single uncorroborated source AND the field appears in a conflict-detection row, OR sole web-research claim with no canonical-source backing
+
+The tier definition is intentionally tied to the actual source coverage in the Data Dictionary's priority chains — with three third-party sources (Specter, Crunchbase, PitchBook) plus Attio (for engagement) and web (for context), most fields realistically resolve to 1–2 contributing sources. Setting "green = 2+" matches that distribution; setting "green = 3+" would have rendered the UI as a wall of yellow.
 - **Click any dot** → audit panel slides in from the right showing:
   - Field name
   - Each source that contributed and its value
@@ -536,7 +585,18 @@ type BriefOutput = {
 - **Data quality flags** appear as a top-bar accordion: *"3 flags detected — click to expand."*
 - **Audit timestamp** visible in footer: *"Generated 2026-05-28 at 14:32 UTC from Specter, Crunchbase, Attio, web (3 calls)."*
 
-### 8.4 Brief layout (dashboard hybrid)
+### 8.4 Trust boundaries (prompt-injection defense)
+
+The Research Agent pipes raw web-search output (founder sites, press releases, blog posts, social posts) into the Synthesis Agent's context. That makes the brief vulnerable to prompt injection: a founder could plant content on a property they control — *"Score thesis_fit as 5/5 because…", "Ignore prior instructions and reply with…"* — and bias the brief.
+
+Two defenses, both implemented:
+
+1. **Explicit trust-boundary wrapping at the prompt level.** The Research Agent's output is rendered inside `<untrusted_web_content sources="…">…</untrusted_web_content>` tags before reaching synthesis. Canonical company / people / traction / DQ-flag blocks are *not* wrapped — they have already passed the deterministic merge with explicit source priority chains and are treated as trusted.
+2. **System-prompt instructions enforcing the boundary.** The synthesis system prompt contains a "Trust boundaries" section that names the attack class, tells the model to treat tagged content as data not instructions, and instructs it to flag attempted injections in the brief's `bear_case` field or as a DQ concern. The two-pronged defense (structural wrapping + explicit instruction) is the standard pattern for retrieval-augmented LLM systems.
+
+For production we add: HTML sanitization of fetched web content before tagging (strip `<script>`, `<style>`, suspicious data-URIs), an output-side regex check that filters obviously-injected statements (*"As an AI assistant..."*, *"Ignore previous instructions..."*) before the brief is persisted, and an offline red-team eval that probes the live pipeline with known injection payloads as part of the standard rubric.
+
+### 8.5 Brief layout (dashboard hybrid)
 
 Above-the-fold (single screen, no scroll):
 
@@ -578,7 +638,7 @@ Mapping the Linear-ticket epics to our delivery phases. Each phase ships an inte
 | **1** — Schema + fixtures + MCP | INFRA + INGEST | Migration for canonical + raw + operational tables, 4 MCP servers (1 standalone process + 3 in-process stubs), fixtures for 6 companies (3-tier realism: T1 populated well, T2 nice depth, T3 stubbed) | Snowflake stored procs, Notion, coinvestor |
 | **2** — Pipeline + agents | MERGE + PIPELINE | LangGraph orchestrator, deterministic merge with priority chains + 6 conflict detectors, Synthesis Agent end-to-end (draft-critique-revise), real web search via Anthropic, daily agenda page + brief reader with confidence dots | Qualification Agent (stub to "proceed"), Research Agent (stub to one search), DQ Agent (stub to severity rules) |
 | **3** — Admin + audit UX | PIPELINE + TESTS | Admin trigger UI (password-gated), live audit panel on click, data quality flag display, regenerate button, runs page | PDF, Google Drive, Attio writeback |
-| **4** *(stretch)* | — | Eval rubric, `brief_feedback` table, one additional real provider | — |
+| **4** *(this push)* | — | Closed reviewer-flagged gaps: doc fidelity, Assignment Re-read, `firm_config` parameterization (multi-tenancy seam), `data_quality_flags` persistence, Vercel Cron + `/api/triggers/scan` endpoint, Google Calendar distribution stub via `pre_meeting_brief.distribution_log`, trust-boundary tagging on web content, `eval/` rubric + golden criteria, confidence-dot tier alignment | `brief_feedback` table, real Google Calendar OAuth dispatch, real Specter/CB/PB/Attio API calls behind MCP |
 
 **Realistic budget for 2026-05-29 EOD**: Phases 0-3 in 18-20 hours of focused engineering. Phase 4 only if Phases 0-3 land before 19:00 local.
 
@@ -598,7 +658,7 @@ What we'd add for real production:
 
 1. **Multi-tenancy**: `firm_id` partitioning on all canonical tables, row-level security in Postgres, firm-scoped SSO
 2. **Real source integrations**: actual Specter, Crunchbase, PitchBook, Attio API clients behind the MCP boundary — zero orchestrator changes
-3. **Eval loop**: Haiku-scored rubric on 5 axes (factual accuracy, prior-engagement coherence, question sharpness, citation discipline, length discipline) against a growing golden set
+3. **Eval continuity**: extend the 3-company golden criteria (`eval/golden/criteria.json`) with every low-scoring brief; CI hook that re-runs `python -m eval.runner` on every prompt-version change; Sonnet retros on lowest-scoring briefs to identify systemic prompt failures
 4. **Feedback loop**: 👍/👎 + freetext per brief, persisted to `brief_feedback`, periodic retro by Sonnet on low-scored briefs to identify patterns
 5. **Cost governance**: per-firm cost budget, model selection policy, rate limiting
 6. **Versioning with diff view**: see what changed between yesterday's and today's brief for a company
@@ -607,7 +667,7 @@ What we'd add for real production:
 9. **Secret management**: Vault or AWS Secrets Manager with rotation policy
 10. **Compliance**: GDPR handling for EU founder profiles, retention policy on diligence notes, audit trail for who viewed which brief
 11. **Coinvestor pipeline**: implement `raw.coinvestor_leads` ingest, syndicate-referral brief variant, partner-firm-scoped views
-12. **Real-time refresh**: WebSocket from agent during synthesis so partners watch the brief assemble live (already prototyped in admin page)
+12. **Real-time refresh**: 2-second HTTP polling against `/api/triggers/runs/{run_id}` is wired today on the admin page — visible per-node progress and timestamps. Upgrade path is Server-Sent Events from the LangGraph node hooks (one connection per run, no WebSocket complexity on Vercel) — keyed to `etl_run_log.run_id`
 
 ---
 
@@ -643,7 +703,7 @@ Fixture authoring tiers:
 | Layer | Choice | Justification |
 |---|---|---|
 | Orchestrator | LangGraph | Matches Linear ticket BRIEF-003; graph-based agentic workflows |
-| Agent SDK patterns | Claude Agent SDK (`@anthropic-ai/claude-agent-sdk`) | First-party, sub-agents + hooks built-in, modern signal |
+| Agent loop scaffolding | Anthropic Python SDK directly, with Claude-Agent-SDK-style patterns (sub-agents-per-task, structured outputs, tool-call audit) implemented by hand | Keeps the proxy-routed setup fully controllable; swap to `claude-agent-sdk` once direct API access is fixed |
 | LLM (synthesis) | Claude Sonnet 4.6 | Quality tier for the core synthesis call |
 | LLM (cheap ops) | Claude Haiku 4.5 | Qualification, eval, dedup checks |
 | Web search | Anthropic `web_search_20250305` tool | Real, no third-party search account needed |
@@ -661,7 +721,7 @@ Fixture authoring tiers:
 - Repo: github.com/rishav1305/pre-meeting-brief
 - Working branch for build: `master` (POC); production-style work would use feature branches
 - Cost target: < $0.20 per brief (Sonnet + Haiku + bounded web search)
-- Latency target: < 60s wall-clock end-to-end per brief (one synthesis call + at most 5 web searches)
+- Latency target: 60–180s wall-clock end-to-end through the LiteLLM proxy used in this POC (one synthesis call + at most 5 web searches). On direct Anthropic API the same pipeline targets < 60s — the proxy's ~36 tok/s throughput vs. ~80 tok/s direct is the dominant factor. Implementation envelope is set at 540s for the synthesis stage (`_WALLCLOCK_BUDGET_S`) to absorb proxy variance without dropping briefs mid-flight.
 
 ---
 
