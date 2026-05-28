@@ -33,6 +33,7 @@ revalidates it back into a :class:`BriefState` so callers get a typed object.
 from __future__ import annotations
 
 from datetime import date
+from uuid import UUID
 
 from langgraph.graph import END, StateGraph
 
@@ -121,18 +122,26 @@ async def run_pipeline(
     domain: str,
     meeting_date: date,
     partner: str,
+    run_id: UUID | None = None,
 ) -> BriefState:
     """Construct initial state, invoke the graph, return the final state.
 
     ``ainvoke`` returns a dict view of the final state under LangGraph 1.x.
     We revalidate via :meth:`BriefState.model_validate` so callers always see
     a properly typed model.
+
+    ``run_id`` (optional): when the caller has already created an
+    ``etl_run_log`` row up front (e.g. the admin trigger endpoint, so the HTTP
+    response can include the run_id before the pipeline finishes),
+    pass it here. :func:`resolve_company` will reuse that row instead of
+    opening a new one.
     """
     initial = BriefState(
         company_name=company_name,
         domain=domain,
         meeting_date=meeting_date,
         partner=partner,
+        run_id=run_id,
     )
     compiled = build_graph()
     final = await compiled.ainvoke(initial)

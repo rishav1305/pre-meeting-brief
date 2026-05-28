@@ -63,11 +63,24 @@ async def resolve_company(state: BriefState) -> BriefState:
             await session.flush()
             state.company_id = new_company.company_id
 
-        run = EtlRunLog(company_id=state.company_id, status="running")
-        session.add(run)
-        await session.flush()
-        state.run_id = run.run_id
-        state.started_at = run.started_at
+        # If the caller (e.g. the admin trigger endpoint) pre-created the
+        # etl_run_log row and seeded ``state.run_id``, keep using that row
+        # so the status endpoint can poll the same run_id throughout the
+        # pipeline. Backfill company_id on the existing row if it wasn't
+        # known up front. Otherwise (cron / direct invocation) open a new
+        # row here as before.
+        if state.run_id is None:
+            run = EtlRunLog(company_id=state.company_id, status="running")
+            session.add(run)
+            await session.flush()
+            state.run_id = run.run_id
+            state.started_at = run.started_at
+        else:
+            existing_run = await session.get(EtlRunLog, state.run_id)
+            if existing_run is not None and existing_run.company_id is None:
+                existing_run.company_id = state.company_id
+            if existing_run is not None and state.started_at is None:
+                state.started_at = existing_run.started_at
         await session.commit()
 
     state.timings["resolve_company"] = time.monotonic() - started

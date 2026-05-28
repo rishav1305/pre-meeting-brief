@@ -13,7 +13,7 @@ for every /api/* request (per the catch-all rewrite in vercel.json).
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import agenda, briefs, health
+from api.routes import agenda, briefs, health, triggers
 
 app = FastAPI(title="Pre-Meeting Brief API", version="0.1.0")
 
@@ -30,3 +30,4 @@ for _prefix in ("/api", "/pre-meeting-brief/api"):
     app.include_router(health.router, prefix=_prefix)
     app.include_router(agenda.router, prefix=_prefix)
     app.include_router(briefs.router, prefix=_prefix)
+    app.include_router(triggers.router, prefix=_prefix)
