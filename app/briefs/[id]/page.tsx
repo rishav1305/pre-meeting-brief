@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { AuditPanel } from "@/components/AuditPanel";
 import { ConfidenceDot } from "@/components/ConfidenceDot";
 import { DashboardSection } from "@/components/DashboardSection";
-import { HowAssembled } from "@/components/HowAssembled";
 import { ThesisFitBadge } from "@/components/ThesisFitBadge";
 import { fetchBrief } from "@/lib/api";
 
@@ -168,9 +167,7 @@ export default async function BriefPage({ params }: { params: Promise<{ id: stri
           </div>
         )}
 
-        <AuditPanel auditData={brief.company} />
-
-        <HowAssembled brief={brief} />
+        <AuditPanel brief={brief} />
 
         <footer className="mt-8 border-t border-slate-200 pt-4 text-xs text-slate-500">
           Generated {new Date(brief.generated_at).toLocaleString()} · Partner: {brief.partner}
