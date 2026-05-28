@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Original recruiter inputs (kept locally for reference, not committed)
+files/
