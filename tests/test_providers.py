@@ -41,3 +41,30 @@ def test_data_provider_is_protocol() -> None:
 
     fake_provider = FakeProvider()
     assert isinstance(fake_provider, DataProvider)
+
+
+from pathlib import Path
+
+import pytest
+
+from api.providers.specter import SpecterProvider
+
+FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
+
+
+@pytest.mark.asyncio
+async def test_specter_provider_hits_fixture():
+    provider = SpecterProvider(fixtures_dir=FIXTURES_DIR)
+    result = await provider.fetch("anduril.com", hints={})
+    assert result is not None
+    assert result.source == "specter"
+    assert result.raw["organization_name"] == "Anduril Industries"
+    assert result.normalized["domain"] == "anduril.com"
+    assert result.normalized["founded_year"] == 2017
+
+
+@pytest.mark.asyncio
+async def test_specter_provider_returns_none_on_miss():
+    provider = SpecterProvider(fixtures_dir=FIXTURES_DIR)
+    result = await provider.fetch("notinfixtures.com", hints={})
+    assert result is None
