@@ -21,11 +21,30 @@ function slugify(s: string): string {
 
 function extractTocItems(source: string): TocItem[] {
   const items: TocItem[] = [];
-  const regex = /^## (.+)$/gm;
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(source)) !== null) {
-    const label = match[1].trim();
-    items.push({ id: slugify(label), label });
+  const lines = source.split("\n");
+  let inFence = false;
+  let currentH2: TocItem | null = null;
+
+  for (const line of lines) {
+    // Skip headings inside fenced code blocks (```...```).
+    if (/^```/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+
+    const h2 = /^## (.+?)\s*$/.exec(line);
+    if (h2) {
+      const label = h2[1].trim();
+      currentH2 = { id: slugify(label), label, children: [] };
+      items.push(currentH2);
+      continue;
+    }
+    const h3 = /^### (.+?)\s*$/.exec(line);
+    if (h3 && currentH2) {
+      const label = h3[1].trim();
+      currentH2.children!.push({ id: slugify(label), label });
+    }
   }
   return items;
 }
@@ -36,9 +55,9 @@ export default async function ApproachPage() {
   const tocItems = extractTocItems(source);
 
   return (
-    <main className="mx-auto flex max-w-5xl gap-10 px-6 py-12">
+    <main className="mx-auto flex max-w-6xl gap-10 px-6 py-12">
       <TocSidebar items={tocItems} />
-      <article className="prose prose-slate prose-headings:tracking-tight prose-table:text-sm max-w-3xl flex-1">
+      <article className="prose prose-slate prose-headings:tracking-tight prose-headings:scroll-mt-20 prose-table:text-sm max-w-3xl flex-1">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeSlug, rehypeAutolinkHeadings]}
