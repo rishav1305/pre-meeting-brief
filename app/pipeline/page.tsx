@@ -1,6 +1,12 @@
-import { ArchitectureSvg } from "@/components/ArchitectureSvg";
+import Link from "next/link";
 
-export const dynamic = "force-static";
+import { ArchitectureSvg } from "@/components/ArchitectureSvg";
+import { PipelineStageCard, STAGES } from "@/components/PipelineStageCard";
+import { SampleRunTrace } from "@/components/SampleRunTrace";
+
+// `searchParams` is dynamic per the App Router; this page reads ?tab=… so it
+// can't be force-static anymore. (Sub-trace also hits a live API.)
+export const dynamic = "force-dynamic";
 
 const ASCII_DIAGRAM = `                  ┌──────────────────────────────────────┐
                   │  TRIGGERS                            │
@@ -92,7 +98,27 @@ const ASCII_DIAGRAM = `                  ┌────────────
   Eval (stretch):   Haiku-scored rubric on 5 axes, golden set
 `;
 
-export default function PipelinePage() {
+type TabId = "architecture" | "a-real-run" | "observability" | "design-notes";
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: "architecture", label: "Architecture" },
+  { id: "a-real-run", label: "A real run" },
+  { id: "observability", label: "Observability" },
+  { id: "design-notes", label: "Design notes" },
+];
+
+function isTab(s: string | undefined): s is TabId {
+  return !!s && (TABS as { id: string }[]).some((t) => t.id === s);
+}
+
+export default async function PipelinePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const params = await searchParams;
+  const tab: TabId = isTab(params.tab) ? params.tab : "architecture";
+
   return (
     <main className="px-6 py-10 sm:py-14">
       <div className="mx-auto max-w-5xl">
@@ -100,135 +126,305 @@ export default function PipelinePage() {
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
             How it works
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">Pipeline</h1>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
+            Pipeline
+          </h1>
           <p className="mt-2 max-w-2xl text-base text-slate-600">
-            How a pre-meeting brief gets built &mdash; the agentic system behind the agenda.
+            How a pre-meeting brief gets built &mdash; the agentic system behind the
+            agenda. Click any stage card to expand its full contract: inputs, outputs,
+            bounds, model, and function signature.
           </p>
         </header>
 
-        <section className="mt-10">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Architecture</h2>
-          <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white p-4">
-            <ArchitectureSvg />
-          </div>
-          <p className="mt-3 text-sm italic text-slate-600">
-            Corrected v2 architecture. The agentic layer (purple) replaces the original heuristic
-            DAG. Deterministic core (slate) preserves consistency where it matters. Source
-            providers exposed via MCP (teal) are pluggable.
-          </p>
-        </section>
+        {/* Tab strip — server-rendered links, ?tab=… driven */}
+        <nav
+          className="sticky top-0 z-10 -mx-6 mb-8 border-b border-slate-200 bg-slate-50/95 px-6 py-2 backdrop-blur supports-[backdrop-filter]:bg-slate-50/75"
+          aria-label="Pipeline page sections"
+        >
+          <ul className="flex flex-wrap gap-1">
+            {TABS.map((t) => {
+              const active = t.id === tab;
+              return (
+                <li key={t.id}>
+                  <Link
+                    href={`/pipeline?tab=${t.id}`}
+                    scroll={false}
+                    className={[
+                      "inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium transition",
+                      active
+                        ? "bg-slate-900 text-white shadow-sm"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                    ].join(" ")}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {t.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-        <section className="mt-12">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Stage by stage</h2>
-
-          <div className="mt-6 space-y-6 text-sm leading-relaxed text-slate-700">
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">1. Trigger</h3>
-              <p className="mt-1">
-                Vercel Cron daily plus a manual <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">/admin</code>{" "}
-                button. Phase 2 routes both through the Qualification Agent so the &ldquo;is this
-                really a first meeting?&rdquo; logic lives in one place instead of duplicated at the
-                edges.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">2. Qualification</h3>
-              <p className="mt-1">
-                Agent decides if this counts as a first meeting in the rolling 3-month window. It
-                handles the edge cases the original heuristic DAG papers over &mdash; conference
-                encounters last month, prior partner intros, dormant relationships that re-open,
-                etc. Output is one of <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">proceed</code>,{" "}
-                <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">skip</code>, or{" "}
-                <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">flag</code>.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">3. Source fetch (parallel)</h3>
-              <p className="mt-1">
-                Research Agent loops <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">web_search</code>{" "}
-                for the unstructured story. Four MCP / in-process providers
-                (Specter, Crunchbase, PitchBook, Attio) fetch from fixtures in the POC and real
-                APIs in production. One source down doesn&rsquo;t fail the brief &mdash;
-                failures become <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">data_quality_flags</code>{" "}
-                surfaced to the partner instead of a 500.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">4. Merge</h3>
-              <p className="mt-1">
-                Deterministic Python applies the Data Dictionary&rsquo;s source-priority chains
-                &mdash; e.g.{" "}
-                <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">
-                  total_raised_usd &larr; COALESCE(PitchBook, Specter, Crunchbase)
-                </code>
-                . Six conflict detectors run across the merged record and emit DQ flags when
-                providers disagree materially. The audit JSONB is frozen at brief-generation time
-                so every value remains traceable to its source even after upstream APIs change.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">5. Synthesis</h3>
-              <p className="mt-1">
-                Claude Sonnet 4.6 with a Renegade-thesis-tuned system prompt. The loop is{" "}
-                <em>draft &rarr; critique &rarr; revise</em>, bounded at 3 iterations or 90 seconds
-                of wall time. Output is strict JSON conforming to{" "}
-                <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">BriefOutput</code> so the
-                renderer is dumb &mdash; no parse-the-LLM-prose step in the hot path.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">6. Render &amp; distribute</h3>
-              <p className="mt-1">
-                HTML is rendered server-side from the JSON, persisted to{" "}
-                <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">pre_meeting_brief</code>,
-                and surfaced on the agenda with a stable versioned URL. In production this also
-                writes back to the Attio CRM record and posts a morning digest to Slack so the
-                partner sees today&rsquo;s briefs without opening the app.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-12">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Observability</h2>
-          <p className="mt-3 text-sm leading-relaxed text-slate-700">
-            Every run opens a row in <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">etl_run_log</code>{" "}
-            with start time, status, latency, token spend, and the final brief id. Conflicts and
-            missing fields land in{" "}
-            <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">data_quality_flags</code>{" "}
-            keyed to the entity they describe, so the UI can surface confidence inline rather than
-            hiding it. Each agent appends its tool calls (and their inputs/outputs) to a per-run
-            audit trail &mdash; useful for debugging hallucinations and for the eval rubric. Phase 2
-            will surface live runs on this page so you can watch a brief assemble.
-          </p>
-        </section>
-
-        <section className="mt-12">
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Live run traces, real LLM synthesis, and admin trigger ship in Phase 2 (the next plan).
-            This page is the static architecture preview.
-          </div>
-        </section>
-
-        <section className="mt-12">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-            Inline ASCII diagram
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
-            The same architecture in monospace &mdash; useful when you&rsquo;re reviewing the doc
-            and want the diagram in-line with the prose.
-          </p>
-          <pre className="mt-4 overflow-x-auto rounded bg-slate-900 p-4 text-xs text-slate-100">
-            {ASCII_DIAGRAM}
-          </pre>
-        </section>
-
+        {tab === "architecture" && <ArchitectureTab />}
+        {tab === "a-real-run" && <RealRunTab />}
+        {tab === "observability" && <ObservabilityTab />}
+        {tab === "design-notes" && <DesignNotesTab />}
       </div>
     </main>
+  );
+}
+
+// ─── tab: Architecture ─────────────────────────────────────────────────────
+function ArchitectureTab() {
+  return (
+    <>
+      <section>
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          The diagram
+        </h2>
+        <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white p-4">
+          <ArchitectureSvg />
+        </div>
+        <p className="mt-3 text-sm italic text-slate-600">
+          The agentic layer (purple) replaces the original heuristic DAG. Deterministic
+          core (slate) preserves consistency where it matters. Source providers exposed
+          via MCP (teal) are pluggable. Every stage below corresponds to one node in
+          the LangGraph orchestrator.
+        </p>
+
+        {/* Color-key legend */}
+        <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-600">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-purple-300" aria-hidden />
+            agentic (LLM call)
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-slate-400" aria-hidden />
+            deterministic (pure Python)
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-teal-300" aria-hidden />
+            MCP boundary
+          </span>
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          Stages
+        </h2>
+        <p className="mt-2 text-sm text-slate-600">
+          Eight nodes, executed in order. Click to expand each one for inputs, outputs,
+          bounds, model, and function signature.
+        </p>
+        <div className="mt-6 space-y-3">
+          {STAGES.map((stage) => (
+            <PipelineStageCard key={stage.id} stage={stage} />
+          ))}
+        </div>
+
+        <div className="mt-6 rounded-md border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600">
+          <span className="font-medium text-slate-900">Cost discipline.</span>{" "}
+          4 of the 8 stages are deterministic Python (free). 2 use Haiku 4.5 (cheap
+          tie-break). Only 2 use Sonnet 4.6 — Research (with web_search) and Synthesis
+          (with forced tool_use). Brief budget: &lt;$0.20 / &lt;60s end-to-end.
+        </div>
+      </section>
+    </>
+  );
+}
+
+// ─── tab: A real run ───────────────────────────────────────────────────────
+function RealRunTab() {
+  return (
+    <>
+      <section>
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          A real run
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+          The static diagram describes the shape of the system. This section grounds it
+          in actual data: a pinned completed brief&rsquo;s{" "}
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[11px]">
+            node_history
+          </code>
+          , rendered as a per-stage timeline with real wall-clock durations and the
+          message each node logged.
+        </p>
+      </section>
+
+      <section className="mt-6">
+        <SampleRunTrace />
+      </section>
+
+      <section className="mt-8 rounded-md border border-slate-200 bg-white px-4 py-3 text-xs leading-relaxed text-slate-600">
+        Want to watch a fresh run assemble?{" "}
+        <Link
+          href="/admin"
+          className="font-medium text-slate-900 underline underline-offset-2 hover:text-slate-700"
+        >
+          /admin
+        </Link>{" "}
+        triggers a new pipeline run and streams the same per-node timeline live (polls
+        every 2 seconds).
+      </section>
+    </>
+  );
+}
+
+// ─── tab: Observability ────────────────────────────────────────────────────
+function ObservabilityTab() {
+  return (
+    <section>
+      <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+        Observability
+      </h2>
+      <div className="mt-4 space-y-4 text-sm leading-relaxed text-slate-700">
+        <p>
+          Every run opens a row in{" "}
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+            etl_run_log
+          </code>{" "}
+          with start time, status, latency, the final brief id, and a JSONB{" "}
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+            node_history
+          </code>{" "}
+          array. Each node writes <em>two</em> records into that array — one when it
+          starts, one when it finishes — so the live status endpoint can re-derive a
+          full timeline (durations, messages, current stage) without a separate events
+          table.
+        </p>
+        <p>
+          Conflicts and missing fields land in{" "}
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+            data_quality_flags
+          </code>{" "}
+          keyed to the entity they describe, so the UI surfaces confidence inline
+          (the dot on each brief field) rather than hiding it. Click any flag in the
+          rendered brief to open the audit panel and see the source-by-source
+          provenance for that value.
+        </p>
+        <p>
+          Each agent appends its tool calls (and their inputs/outputs) to a per-run
+          audit trail &mdash; useful for debugging hallucinations, replaying a
+          failure, and feeding the eval rubric.
+        </p>
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <span className="font-semibold">Live now.</span> The{" "}
+          <Link
+            href="/admin"
+            className="font-medium underline underline-offset-2 hover:text-emerald-900"
+          >
+            /admin
+          </Link>{" "}
+          page triggers fresh runs, and{" "}
+          <Link
+            href="/pipeline?tab=a-real-run"
+            className="font-medium underline underline-offset-2 hover:text-emerald-900"
+          >
+            “A real run”
+          </Link>{" "}
+          replays the pinned reference run&rsquo;s node history.
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── tab: Design notes ─────────────────────────────────────────────────────
+function DesignNotesTab() {
+  return (
+    <>
+      <section>
+        <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          Design notes
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-slate-600">
+          The reasoning behind the shape of the pipeline &mdash; what we kept agentic,
+          what we made deterministic, and why.
+        </p>
+      </section>
+
+      <section className="mt-6 space-y-5 text-sm leading-relaxed text-slate-700">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900">
+            Why a hybrid (not all-LLM, not all-rules)
+          </h3>
+          <p className="mt-1">
+            The merge step is the consistency contract: <em>this</em> is where the Data
+            Dictionary&rsquo;s priority chains and conflict rules live, expressed as
+            plain Python. The agentic surface is reserved for the parts that genuinely
+            need judgment &mdash; first-meeting qualification, deep-dive web research,
+            data-quality tie-breaks, and synthesis. Everything else is deterministic
+            Python so it&rsquo;s testable, debuggable, and free.
+          </p>
+        </div>
+
+        <div>
+          <h3 className="text-base font-semibold text-slate-900">
+            Why forced tool_use for synthesis
+          </h3>
+          <p className="mt-1">
+            Synthesis is the highest-leverage call and the easiest to get wrong (drift
+            into prose, return malformed JSON, hallucinate fields). We invoke Sonnet
+            with the{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+              submit_brief
+            </code>{" "}
+            tool and{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+              tool_choice = required
+            </code>
+            . The SDK then validates the response against the schema for free &mdash;
+            no parse-the-LLM-prose step in the hot path.
+          </p>
+        </div>
+
+        <div>
+          <h3 className="text-base font-semibold text-slate-900">
+            Why MCP for source providers
+          </h3>
+          <p className="mt-1">
+            specter-mcp lives in its own process behind the MCP protocol so the
+            pipeline can&rsquo;t accidentally reach into provider internals, and so
+            we can swap implementations (fixture-backed for the POC, real API for
+            prod) by changing the subprocess command, not the calling code. The other
+            three providers expose the same{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+              DataProvider
+            </code>{" "}
+            interface in-process to keep the POC fast.
+          </p>
+        </div>
+
+        <div>
+          <h3 className="text-base font-semibold text-slate-900">
+            Why graceful degradation everywhere
+          </h3>
+          <p className="mt-1">
+            A pre-meeting brief is graded on whether the partner can walk into the
+            meeting prepared, not on whether every API was up. Each fetch uses{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+              asyncio.gather(return_exceptions=True)
+            </code>{" "}
+            so one source down doesn&rsquo;t fail the brief. Research falls back to an
+            empty <code className="font-mono">web_raw</code>. Synthesis falls back from
+            critique → revise to just the draft on any sub-call failure. The whole
+            thing is allergic to dropping briefs.
+          </p>
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h3 className="text-base font-semibold text-slate-900">Inline ASCII diagram</h3>
+        <p className="mt-1 text-sm text-slate-600">
+          The same architecture in monospace &mdash; useful if you&rsquo;re reviewing
+          the doc and want the shape of the system in-line with the prose.
+        </p>
+        <pre className="mt-3 overflow-x-auto rounded bg-slate-900 p-4 text-xs text-slate-100">
+          {ASCII_DIAGRAM}
+        </pre>
+      </section>
+    </>
   );
 }
