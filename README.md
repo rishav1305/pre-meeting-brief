@@ -4,6 +4,25 @@ An automated pre-meeting brief platform for Renegade Capital partners. Triggered
 
 **Approach document**: [`docs/approach.md`](docs/approach.md) — full architecture, data model, agentic workflow design, MCP server design, phase plan, and production roadmap.
 
-**Live**: https://rishavchatterjee.com/pre-meeting-brief *(deploying in Phase 0)*
+**Live**: https://rishavchatterjee.com/pre-meeting-brief
 
-**Status**: architecture submission committed. POC build in progress.
+**Status**: Phase 0 (scaffold + deploy) → Phase 1 (schema + fixtures + providers) in progress.
+
+## Development
+
+```bash
+make install          # install npm + pip deps
+cp .env.example .env  # fill in POSTGRES_URL after Vercel Postgres provisioning
+make migrate          # run Alembic migrations
+make seed             # seed calendar_events + sample briefs
+make dev              # next dev server on :3000
+make test             # pytest suite
+```
+
+## Structure
+
+- `app/` — Next.js App Router (`basePath: /pre-meeting-brief`)
+- `api/` — Python FastAPI serverless function
+- `mcp_servers/` — Standalone MCP servers (Phase 1+)
+- `fixtures/` — Synthetic JSON fixtures per company domain
+- `docs/approach.md` — submission deliverable
