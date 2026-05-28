@@ -1,0 +1,74 @@
+{
+  "version": "2026-05-28.1",
+  "axes": [
+    {
+      "id": "factual_accuracy",
+      "name": "Factual accuracy",
+      "scale": "0-5",
+      "description": "Are all hard facts (founding year, HQ, total raised, last round, founders, employee count) consistent with the canonical sources? Penalize hallucinated values, swapped units, or unsupported claims."
+    },
+    {
+      "id": "prior_engagement_coherence",
+      "name": "Prior engagement coherence",
+      "scale": "0-5",
+      "description": "Does the brief surface what's NEW since last contact and lead with new_highlights? Penalize introducing the company from zero when prior interactions exist."
+    },
+    {
+      "id": "question_sharpness",
+      "name": "Question sharpness",
+      "scale": "0-5",
+      "description": "Are key_engagement_questions specific, partner-actionable, and tied to the company's actual business model — not generic VC questions? Penalize 'what's your TAM' style fluff."
+    },
+    {
+      "id": "citation_discipline",
+      "name": "Citation discipline",
+      "scale": "0-5",
+      "description": "Are non-obvious claims attributed to a source — Specter, Crunchbase, PitchBook, Attio, or a web citation? Penalize unsourced 'industry sources say' claims."
+    },
+    {
+      "id": "language_calibration",
+      "name": "Language calibration",
+      "scale": "0-5",
+      "description": "Is the prose analytical and hedged where appropriate ('Revenue est. ~$300M, modeled' not 'Revenue is $300M'; 'Founders have prior exit' not 'World-class team')? Penalize founder hagiography and unhedged estimates."
+    }
+  ],
+  "companies": [
+    {
+      "domain": "anduril.com",
+      "expected": {
+        "thesis_fit_score": 5,
+        "must_mention_keywords": ["defense", "Pentagon", "DoD", "autonomous", "Palmer Luckey"],
+        "must_not_mention_keywords": ["revolutionary", "world-class", "game-changing"],
+        "min_questions": 3,
+        "min_citations": 2,
+        "min_new_highlights": 1,
+        "bear_case_required": true,
+        "notes": "Renegade thesis core — defense + workflow-critical. Brief should be confident on fit score but rigorous on the bear case (regulatory dependency, single-customer concentration on DoD)."
+      }
+    },
+    {
+      "domain": "hadrian.co",
+      "expected": {
+        "thesis_fit_score": 5,
+        "must_mention_keywords": ["manufacturing", "automation", "precision"],
+        "must_not_mention_keywords": ["revolutionary", "world-class"],
+        "min_questions": 3,
+        "min_citations": 2,
+        "bear_case_required": true,
+        "notes": "Industrial automation, dual-use thesis. Brief should engage with the capital intensity question."
+      }
+    },
+    {
+      "domain": "mercury.com",
+      "expected": {
+        "thesis_fit_score_max": 2,
+        "must_mention_keywords": ["banking", "startups", "deposits"],
+        "must_not_mention_keywords": ["Markets That Matter", "core thesis"],
+        "min_questions": 3,
+        "min_citations": 2,
+        "bear_case_required": true,
+        "notes": "Horizontal banking SaaS — off Renegade's thesis. Brief should NOT score this high on thesis_fit; the bear case should articulate the thesis misalignment, not just generic risks."
+      }
+    }
+  ]
+}
