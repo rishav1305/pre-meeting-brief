@@ -59,4 +59,7 @@ async def get_brief(
         "key_engagement_questions": brief.key_engagement_questions,
         "podcast_mentions": brief.podcast_mentions,
         "prior_interactions": brief.prior_interactions,
+        "audit_company": brief.audit_company,
+        "audit_people": brief.audit_people,
+        "audit_traction_metrics": brief.audit_traction_metrics,
     }
