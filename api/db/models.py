@@ -122,3 +122,55 @@ class Company(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
+
+class People(Base):
+    __tablename__ = "people"
+    __table_args__ = (
+        CheckConstraint(
+            "employee_range IS NULL OR employee_range IN "
+            "('1-10','11-50','51-200','201-500','501-1000','1001-5000','5001-10000','10001+')",
+            name="people_employee_range_check",
+        ),
+    )
+
+    company_id: Mapped[UUID] = mapped_column(ForeignKey("company.company_id"), primary_key=True)
+
+    founders: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+    key_executives: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+    board_members: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+    employee_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    employee_range: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    headcount_trend: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+    hiring_signals: Mapped[list[str] | None] = mapped_column(TextArray(), nullable=True)
+    open_role_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    org_rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    audit: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+
+
+class TractionMetrics(Base):
+    __tablename__ = "traction_metrics"
+
+    company_id: Mapped[UUID] = mapped_column(ForeignKey("company.company_id"), primary_key=True)
+
+    highlights: Mapped[list[str] | None] = mapped_column(TextArray(), nullable=True)
+    new_highlights: Mapped[list[str] | None] = mapped_column(TextArray(), nullable=True)
+    web_visits_latest: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    web_visits_trend: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+    web_popularity_rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    bounce_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
+    top_traffic_country: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    traffic_sources: Mapped[str | None] = mapped_column(String, nullable=True)
+    linkedin_followers: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    linkedin_trend: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+    g2_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+    g2_review_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    trustpilot_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+    awards: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+    patents: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
+    reported_clients: Mapped[list[str] | None] = mapped_column(TextArray(), nullable=True)
+    it_spend_usd: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    news: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+
+    audit: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
