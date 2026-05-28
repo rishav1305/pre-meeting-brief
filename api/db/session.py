@@ -11,12 +11,13 @@ from api.config import settings
 
 
 def _engine_url() -> str:
-    # SQLAlchemy async driver requires postgresql+asyncpg, not postgres:// or postgresql://
+    # Use psycopg3 (postgresql+psycopg) for async. asyncpg rejects Neon's
+    # channel_binding=require query param; psycopg3 handles it natively.
     url = settings.postgres_url
     if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        url = url.replace("postgres://", "postgresql+psycopg://", 1)
     elif url.startswith("postgresql://"):
-        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
     return url
 
 
