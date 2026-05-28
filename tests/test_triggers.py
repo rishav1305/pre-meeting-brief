@@ -171,6 +171,57 @@ async def test_status_running_returns_running(
     assert body["recent_tool_calls"] == []
 
 
+async def test_status_includes_current_node_and_history(
+    client, admin_pw, test_session_factory, stub_run_pipeline
+):
+    """Phase 3 contract: status endpoint surfaces current_node + node_history."""
+    seeded_history = [
+        {
+            "node": "resolve_company",
+            "status": "complete",
+            "started_at": "2026-05-28T12:00:00+00:00",
+            "completed_at": "2026-05-28T12:00:01+00:00",
+            "duration_ms": 1000,
+            "message": "Normalized domain → company_id 8ea7e0a3…",
+        },
+        {
+            "node": "research",
+            "status": "running",
+            "started_at": "2026-05-28T12:00:02+00:00",
+            "completed_at": None,
+            "duration_ms": None,
+            "message": "",
+        },
+    ]
+    async with test_session_factory() as session:
+        company = Company(domain="hadrian.co", operating_status="active")
+        session.add(company)
+        await session.flush()
+        run = EtlRunLog(
+            company_id=company.company_id,
+            status="running",
+            current_node="research",
+            node_history=seeded_history,
+        )
+        session.add(run)
+        await session.flush()
+        run_id = run.run_id
+        await session.commit()
+
+    response = client.get(f"/api/triggers/runs/{run_id}")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["current_node"] == "research"
+    assert isinstance(body["node_history"], list)
+    assert len(body["node_history"]) == 2
+    assert body["node_history"][0]["node"] == "resolve_company"
+    assert body["node_history"][0]["status"] == "complete"
+    assert body["node_history"][0]["duration_ms"] == 1000
+    assert body["node_history"][1]["node"] == "research"
+    assert body["node_history"][1]["status"] == "running"
+    assert body["node_history"][1]["completed_at"] is None
+
+
 async def test_status_complete_includes_brief_id(
     client, admin_pw, test_session_factory, stub_run_pipeline
 ):

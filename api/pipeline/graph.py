@@ -43,6 +43,12 @@ from api.pipeline.agents.research import research_agent
 from api.pipeline.agents.synthesis import synthesise_brief
 from api.pipeline.merge import merge_canonical
 from api.pipeline.nodes import fetch_all, render_and_persist, resolve_company
+from api.pipeline.progress import (
+    message_for,
+    record_node_complete,
+    record_node_failed,
+    record_node_start,
+)
 from api.pipeline.state import BriefState
 
 
@@ -58,6 +64,33 @@ async def _merge_node(state: BriefState) -> BriefState:
     monkey-patch it via ``patch("api.pipeline.graph._merge_node", new=...)``.
     """
     return merge_canonical(state)
+
+
+def _wrap_node(node_name: str, fn):
+    """Wrap a pipeline node with progress recording (start/complete/failed).
+
+    Each node's start/finish writes a record to ``etl_run_log.node_history``
+    via :mod:`api.pipeline.progress`. ``record_node_start`` is a no-op when
+    ``state.run_id is None`` (i.e. early in resolve_company before the
+    run-log row exists), so callers can wrap every node uniformly.
+    """
+    async def wrapped(state: BriefState) -> BriefState:
+        await record_node_start(state.run_id, node_name)
+        try:
+            result = await fn(state)
+            # fn may return a new state object or mutate in place
+            final_state = result if result is not None else state
+            await record_node_complete(
+                final_state.run_id, node_name, message_for(node_name, final_state)
+            )
+            return final_state
+        except Exception as exc:  # noqa: BLE001
+            await record_node_failed(
+                state.run_id, node_name, f"{type(exc).__name__}: {exc}"
+            )
+            raise
+
+    return wrapped
 
 
 def _qualification_route(state: BriefState) -> str:
@@ -86,14 +119,14 @@ def build_graph():
     """
     graph = StateGraph(BriefState)
 
-    graph.add_node("resolve_company", resolve_company)
-    graph.add_node("qualification", qualification_agent)
-    graph.add_node("fetch_all", fetch_all)
-    graph.add_node("research", research_agent)
-    graph.add_node("merge", _merge_node)
-    graph.add_node("data_quality", data_quality_agent)
-    graph.add_node("synthesise", synthesise_brief)
-    graph.add_node("render_persist", render_and_persist)
+    graph.add_node("resolve_company", _wrap_node("resolve_company", resolve_company))
+    graph.add_node("qualification", _wrap_node("qualification", qualification_agent))
+    graph.add_node("fetch_all", _wrap_node("fetch_all", fetch_all))
+    graph.add_node("research", _wrap_node("research", research_agent))
+    graph.add_node("merge", _wrap_node("merge", _merge_node))
+    graph.add_node("data_quality", _wrap_node("data_quality", data_quality_agent))
+    graph.add_node("synthesise", _wrap_node("synthesise", synthesise_brief))
+    graph.add_node("render_persist", _wrap_node("render_persist", render_and_persist))
 
     graph.set_entry_point("resolve_company")
     graph.add_edge("resolve_company", "qualification")

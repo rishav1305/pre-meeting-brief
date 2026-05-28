@@ -125,6 +125,9 @@ class RunStatusResponse(BaseModel):
     error_message: str | None
     company_id: UUID | None
     brief_id: UUID | None
+    # Phase 3: per-node progress written incrementally by api.pipeline.progress
+    current_node: str | None = None
+    node_history: list[dict] = Field(default_factory=list)
     # TODO: Phase 3 will wire tool_calls table; for now we return [].
     recent_tool_calls: list[dict] = Field(default_factory=list)
 
@@ -157,5 +160,7 @@ async def get_run_status(run_id: UUID) -> RunStatusResponse:
             error_message=run.error_message,
             company_id=run.company_id,
             brief_id=brief.brief_id if brief else None,
+            current_node=run.current_node,
+            node_history=list(run.node_history or []),
             recent_tool_calls=[],
         )
