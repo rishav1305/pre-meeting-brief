@@ -174,3 +174,110 @@ class TractionMetrics(Base):
     news: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
 
     audit: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+
+
+from sqlalchemy import Date
+from datetime import date as date_type
+
+
+class EtlRunLog(Base):
+    __tablename__ = "etl_run_log"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('running','merged','complete','failed')",
+            name="etl_run_log_status_check",
+        ),
+    )
+
+    run_id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    company_id: Mapped[UUID | None] = mapped_column(ForeignKey("company.company_id"), nullable=True)
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="running")
+    error_message: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class DataQualityFlag(Base):
+    __tablename__ = "data_quality_flags"
+
+    flag_id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    run_id: Mapped[UUID | None] = mapped_column(nullable=True)
+    company_id: Mapped[UUID] = mapped_column(ForeignKey("company.company_id"), nullable=False)
+    field: Mapped[str] = mapped_column(String(64), nullable=False)
+    issue: Mapped[str] = mapped_column(String(128), nullable=False)
+    severity: Mapped[str] = mapped_column(String(16), nullable=False, default="medium")
+    source_a: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    value_a: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_b: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    value_b: Mapped[str | None] = mapped_column(String, nullable=True)
+    flagged_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class CalendarEvent(Base):
+    __tablename__ = "calendar_events"
+
+    event_id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    partner: Mapped[str] = mapped_column(String(64), nullable=False)
+    company_domain: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    meeting_date: Mapped[date_type] = mapped_column(Date, nullable=False)
+    attendees: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+    source: Mapped[str] = mapped_column(String(32), nullable=False, default="manual_seed")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class PreMeetingBrief(Base):
+    __tablename__ = "pre_meeting_brief"
+
+    brief_id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    company_id: Mapped[UUID] = mapped_column(ForeignKey("company.company_id"), nullable=False)
+    run_id: Mapped[UUID | None] = mapped_column(nullable=True)
+    partner: Mapped[str] = mapped_column(String(64), nullable=False)
+    meeting_date: Mapped[date_type] = mapped_column(Date, nullable=False)
+
+    # Prompt-based fields (from DD sheet 5)
+    thesis_fit: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+    industry_deepdive: Mapped[str | None] = mapped_column(String, nullable=True)
+    market_deepdive: Mapped[str | None] = mapped_column(String, nullable=True)
+    key_engagement_questions: Mapped[list[str] | None] = mapped_column(TextArray(), nullable=True)
+    podcast_mentions: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+    prior_interactions: Mapped[list | None] = mapped_column(CrossJSON(), nullable=True)
+
+    # The rendered brief + distribution links
+    pre_meeting_brief: Mapped[str] = mapped_column(String, nullable=False, default="")
+    pre_meeting_brief_link: Mapped[str] = mapped_column(String(512), nullable=False, default="")
+    google_drive_link: Mapped[str] = mapped_column(String(512), nullable=False, default="")
+    attio_company_link: Mapped[str] = mapped_column(String(512), nullable=False, default="")
+
+    # Frozen provenance at brief-gen time (3 separate columns per the DD)
+    audit_company: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+    audit_people: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+    audit_traction_metrics: Mapped[dict | None] = mapped_column(CrossJSON(), nullable=True)
+
+    generated_ts: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class SourcePayload(Base):
+    """Combined raw layer — one row per (company_id, source).
+
+    Simpler than the original spec's per-source raw tables; same semantics.
+    """
+    __tablename__ = "source_payloads"
+
+    payload_id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    company_id: Mapped[UUID] = mapped_column(ForeignKey("company.company_id"), nullable=False)
+    source: Mapped[str] = mapped_column(String(32), nullable=False)
+    raw: Mapped[dict] = mapped_column(CrossJSON(), nullable=False)
+    pulled_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

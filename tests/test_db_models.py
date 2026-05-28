@@ -88,3 +88,127 @@ async def test_traction_metrics_insert_and_select(db_session):
     assert fetched is not None
     assert fetched.g2_rating == 4.7
     assert "headcount_surge" in fetched.highlights
+
+
+from datetime import date as date_type
+
+from api.db.models import (
+    CalendarEvent,
+    DataQualityFlag,
+    EtlRunLog,
+    PreMeetingBrief,
+    SourcePayload,
+)
+
+
+@pytest.mark.asyncio
+async def test_etl_run_log(db_session):
+    company_id = uuid4()
+    db_session.add(Company(company_id=company_id, domain="ramp.com", operating_status="active"))
+    await db_session.commit()
+
+    run_id = uuid4()
+    db_session.add(
+        EtlRunLog(
+            run_id=run_id,
+            company_id=company_id,
+            status="running",
+        )
+    )
+    await db_session.commit()
+
+    fetched = await db_session.get(EtlRunLog, run_id)
+    assert fetched is not None
+    assert fetched.status == "running"
+
+
+@pytest.mark.asyncio
+async def test_data_quality_flag(db_session):
+    company_id = uuid4()
+    db_session.add(Company(company_id=company_id, domain="glean.com", operating_status="active"))
+    await db_session.commit()
+
+    flag = DataQualityFlag(
+        flag_id=uuid4(),
+        run_id=uuid4(),
+        company_id=company_id,
+        field="founded_year",
+        issue="delta_gt_1_year",
+        source_a="Specter",
+        value_a="2019",
+        source_b="Crunchbase",
+        value_b="2021",
+    )
+    db_session.add(flag)
+    await db_session.commit()
+
+    fetched = await db_session.get(DataQualityFlag, flag.flag_id)
+    assert fetched.field == "founded_year"
+
+
+@pytest.mark.asyncio
+async def test_calendar_event(db_session):
+    company_id = uuid4()
+    db_session.add(Company(company_id=company_id, domain="mercury.com", operating_status="active"))
+    await db_session.commit()
+
+    event = CalendarEvent(
+        event_id=uuid4(),
+        partner="Devon",
+        company_domain="mercury.com",
+        meeting_date=date_type(2026, 5, 30),
+        attendees={"emails": ["devon@renegade.vc", "founder@mercury.com"]},
+        source="manual_seed",
+    )
+    db_session.add(event)
+    await db_session.commit()
+
+    fetched = await db_session.get(CalendarEvent, event.event_id)
+    assert fetched.partner == "Devon"
+
+
+@pytest.mark.asyncio
+async def test_pre_meeting_brief(db_session):
+    company_id = uuid4()
+    db_session.add(Company(company_id=company_id, domain="anduril.com", operating_status="active"))
+    await db_session.commit()
+
+    brief = PreMeetingBrief(
+        brief_id=uuid4(),
+        company_id=company_id,
+        run_id=uuid4(),
+        partner="Sara",
+        meeting_date=date_type(2026, 5, 30),
+        thesis_fit={"score": 5, "reasoning": "core thesis", "bear_case": "regulatory"},
+        industry_deepdive="Defense software is...",
+        market_deepdive="The defense tech market...",
+        key_engagement_questions=["Q1", "Q2", "Q3"],
+        podcast_mentions=[],
+        prior_interactions=[],
+        pre_meeting_brief="<html>...</html>",
+        pre_meeting_brief_link="https://rishavchatterjee.com/pre-meeting-brief/briefs/...",
+        google_drive_link="",
+        attio_company_link="",
+    )
+    db_session.add(brief)
+    await db_session.commit()
+
+    fetched = await db_session.get(PreMeetingBrief, brief.brief_id)
+    assert fetched.thesis_fit["score"] == 5
+
+
+@pytest.mark.asyncio
+async def test_source_payload(db_session):
+    company_id = uuid4()
+    db_session.add(Company(company_id=company_id, domain="hadrian.co", operating_status="active"))
+    await db_session.commit()
+
+    db_session.add(
+        SourcePayload(
+            payload_id=uuid4(),
+            company_id=company_id,
+            source="specter",
+            raw={"id": "spec_123", "name": "Hadrian"},
+        )
+    )
+    await db_session.commit()
