@@ -4,13 +4,26 @@ import { BriefCard } from "@/components/BriefCard";
 import { fetchAgenda } from "@/lib/api";
 import type { AgendaResponse } from "@/lib/types";
 
-const PARTNER = "Devon";
+const PARTNERS = ["Devon", "Sara", "Joe"] as const;
+type Partner = (typeof PARTNERS)[number];
+const DEFAULT_PARTNER: Partner = "Devon";
 
-export default async function Home() {
+function isPartner(s: string | undefined): s is Partner {
+  return !!s && (PARTNERS as readonly string[]).includes(s);
+}
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ partner?: string }>;
+}) {
+  const params = await searchParams;
+  const partner: Partner = isPartner(params.partner) ? params.partner : DEFAULT_PARTNER;
+
   let agenda: AgendaResponse | null = null;
   let error: string | null = null;
   try {
-    agenda = await fetchAgenda(PARTNER);
+    agenda = await fetchAgenda(partner);
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
@@ -34,13 +47,13 @@ export default async function Home() {
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-2xl">
               <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Today&apos;s agenda · Partner: {PARTNER}
+                Today&apos;s agenda
               </p>
               <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Pre-meeting briefs, on tap.
               </h1>
               <p className="mt-4 text-base text-slate-600">
-                Every card below is a brief assembled by a 4-agent LangGraph pipeline — Qualification,
+                Each card below is a brief assembled by a 4-agent LangGraph pipeline — Qualification,
                 Research (Claude <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">web_search</code>),
                 Data Quality, and Synthesis (forced tool_use for guaranteed JSON). Click any card to
                 read the dashboard, or generate a fresh one for any domain.
@@ -97,14 +110,39 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Section heading */}
+        {/* Partner switcher + section heading */}
         <section className="mt-10">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Upcoming first meetings · next 14 days
-            </h2>
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-3">
+            <div>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Viewing agenda for partner
+              </h2>
+              <div className="mt-2 flex items-center gap-1">
+                {PARTNERS.map((p) => {
+                  const active = p === partner;
+                  return (
+                    <Link
+                      key={p}
+                      href={p === DEFAULT_PARTNER ? "/" : `/?partner=${p}`}
+                      className={
+                        active
+                          ? "rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white shadow-sm"
+                          : "rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                      }
+                    >
+                      {p}
+                    </Link>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                Partners are senior investors at the VC firm. Each has their own calendar; the
+                pipeline scopes data, prior-engagement, and synthesis to the partner the brief is
+                generated for.
+              </p>
+            </div>
             <p className="text-xs text-slate-400">
-              Demo client: Renegade Capital
+              Demo client: <span className="font-medium text-slate-600">Renegade Capital</span>
             </p>
           </div>
 
@@ -115,7 +153,9 @@ export default async function Home() {
               </div>
             )}
             {agenda && items.length === 0 && (
-              <p className="text-sm text-slate-500">No meetings scheduled.</p>
+              <div className="rounded-md border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
+                No meetings scheduled for <span className="font-medium text-slate-700">{partner}</span> in the next 14 days.
+              </div>
             )}
             {agenda && items.length > 0 && (
               <div className="space-y-3">
