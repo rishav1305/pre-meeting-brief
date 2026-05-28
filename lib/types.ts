@@ -15,3 +15,7 @@ export type AgendaResponse = {
   partner: string;
   items: AgendaItem[];
 };
+
+export type Partner = "Devon" | "Sara" | "Joe";
+
+export type TaggedAgendaItem = AgendaItem & { partner: string };
