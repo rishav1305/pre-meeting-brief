@@ -85,11 +85,37 @@ def _critique_payload() -> dict:
 
 
 def _mock_response(payload: dict | str) -> MagicMock:
-    """Build an Anthropic-shaped response whose .content[0].text is the payload."""
+    """Build an Anthropic-shaped TEXT response whose .content[0].text is the payload.
+
+    Used to mock the critique stage (which is still text-based) and any other
+    non-structured Claude calls. Note: for the draft and revise stages (which
+    now use tool_use), use _mock_tool_response instead.
+    """
     text = payload if isinstance(payload, str) else json.dumps(payload)
     fake = MagicMock()
-    fake.content = [MagicMock(text=text)]
+    fake.content = [MagicMock(text=text, type="text")]
     fake.stop_reason = "end_turn"
+    return fake
+
+
+def _mock_tool_response(payload: dict | None) -> MagicMock:
+    """Build an Anthropic-shaped TOOL_USE response for the submit_brief tool.
+
+    Mocks the new structured-output path: response.content[0] is a tool_use
+    block whose .input is the brief dict. payload=None simulates a malformed
+    response with no tool_use block (the synthesis path treats this as error).
+    """
+    fake = MagicMock()
+    if payload is None:
+        # No tool_use block — synthesis treats this as an error
+        fake.content = []
+    else:
+        block = MagicMock()
+        block.type = "tool_use"
+        block.name = "submit_brief"
+        block.input = payload
+        fake.content = [block]
+    fake.stop_reason = "tool_use"
     return fake
 
 
@@ -117,14 +143,14 @@ def _populated_state() -> BriefState:
 
 
 async def test_synthesis_happy_path():
-    """3 successful calls — draft, critique, revise — yields revised JSON."""
+    """3 successful calls — draft (tool_use), critique (text), revise (tool_use) — yields revised JSON."""
     state = _populated_state()
 
     fake_client = MagicMock()
     fake_client.messages.create.side_effect = [
-        _mock_response(_draft_payload()),
+        _mock_tool_response(_draft_payload()),
         _mock_response(_critique_payload()),
-        _mock_response(_revised_payload()),
+        _mock_tool_response(_revised_payload()),
     ]
 
     with patch("api.pipeline.agents.synthesis.get_client", return_value=fake_client):
@@ -161,7 +187,7 @@ async def test_synthesis_critique_failure_uses_draft():
 
     fake_client = MagicMock()
     fake_client.messages.create.side_effect = [
-        _mock_response(_draft_payload(score=3)),
+        _mock_tool_response(_draft_payload(score=3)),
         RuntimeError("critique timeout"),
     ]
 
@@ -187,14 +213,14 @@ async def test_synthesis_critique_failure_uses_draft():
 
 
 async def test_synthesis_revise_invalid_json_falls_back_to_draft():
-    """Revise returns malformed JSON → final is the draft."""
+    """Revise tool_use returns no submit_brief block → final is the draft."""
     state = _populated_state()
 
     fake_client = MagicMock()
     fake_client.messages.create.side_effect = [
-        _mock_response(_draft_payload(score=2)),
+        _mock_tool_response(_draft_payload(score=2)),
         _mock_response(_critique_payload()),
-        _mock_response("this is not json at all — sorry."),
+        _mock_tool_response(None),  # malformed revise: no tool_use block
     ]
 
     with patch("api.pipeline.agents.synthesis.get_client", return_value=fake_client):
@@ -214,9 +240,9 @@ async def test_synthesis_thesis_fit_score_range():
     for score in (1, 2, 3, 4, 5):
         fake_client = MagicMock()
         fake_client.messages.create.side_effect = [
-            _mock_response(_draft_payload(score=score)),
+            _mock_tool_response(_draft_payload(score=score)),
             _mock_response(_critique_payload()),
-            _mock_response(_draft_payload(score=score)),  # revise echoes
+            _mock_tool_response(_draft_payload(score=score)),  # revise echoes
         ]
 
         with patch("api.pipeline.agents.synthesis.get_client", return_value=fake_client):
@@ -226,27 +252,28 @@ async def test_synthesis_thesis_fit_score_range():
         assert 1 <= out.brief_json["thesis_fit"]["score"] <= 5
 
 
-async def test_synthesis_draft_invalid_then_retry_then_valid():
-    """First draft = bad JSON → automatic retry → valid → full loop continues.
-    Total LLM calls: 1 (bad) + 1 (retry) + 1 (critique) + 1 (revise) = 4."""
+async def test_synthesis_draft_tool_use_failure_sets_error():
+    """If draft tool_use returns no submit_brief block, state.error is set
+    and the pipeline bails before critique/revise. (No retry — the
+    forced-tool-use schema makes retries unnecessary; either Claude calls
+    the tool correctly or it doesn't, and the SDK's validation handles
+    schema enforcement.)
+    """
     state = _populated_state()
 
     fake_client = MagicMock()
     fake_client.messages.create.side_effect = [
-        _mock_response("oops not json"),
-        _mock_response(_draft_payload()),
-        _mock_response(_critique_payload()),
-        _mock_response(_revised_payload()),
+        _mock_tool_response(None),  # malformed — no tool_use block
     ]
 
     with patch("api.pipeline.agents.synthesis.get_client", return_value=fake_client):
         out = await synthesise_brief(state)
 
-    assert out.brief_json is not None
-    assert out.brief_json["snapshot"]["hook"].startswith("REVISED:")
-    # 4 LLM calls expected
-    assert fake_client.messages.create.call_count == 4
-    assert len(out.tool_calls) == 4
+    assert out.brief_json is None
+    assert out.error is not None
+    assert "tool_use" in out.error or "submit_brief" in out.error
+    # Only 1 LLM call — bailed before critique/revise
+    assert fake_client.messages.create.call_count == 1
 
 
 async def test_synthesis_records_timings():
@@ -255,9 +282,9 @@ async def test_synthesis_records_timings():
 
     fake_client = MagicMock()
     fake_client.messages.create.side_effect = [
-        _mock_response(_draft_payload()),
+        _mock_tool_response(_draft_payload()),
         _mock_response(_critique_payload()),
-        _mock_response(_revised_payload()),
+        _mock_tool_response(_revised_payload()),
     ]
 
     with patch("api.pipeline.agents.synthesis.get_client", return_value=fake_client):

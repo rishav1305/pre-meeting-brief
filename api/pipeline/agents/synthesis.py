@@ -105,6 +105,128 @@ def _call_anthropic(
         return "", f"{type(exc).__name__}: {exc}"
 
 
+# ── Forced-structured-output tool (Anthropic tool_use) ─────────────────────
+#
+# The LiteLLM proxy occasionally produces JSON with unescaped quotes or other
+# minor syntax bugs that break json.loads. We get around this entirely by
+# defining a tool with an input_schema and forcing Claude to call it — the
+# SDK validates the input against the schema at the API boundary, so a
+# successful response yields a guaranteed-valid dict.
+SUBMIT_BRIEF_TOOL = {
+    "name": "submit_brief",
+    "description": "Submit the final pre-meeting brief as structured data.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "snapshot": {
+                "type": "object",
+                "properties": {
+                    "hook": {"type": "string"},
+                    "new_highlights": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["hook"],
+            },
+            "thesis_fit": {
+                "type": "object",
+                "properties": {
+                    "score": {"type": "integer", "minimum": 1, "maximum": 5},
+                    "reasoning": {"type": "string"},
+                    "bear_case": {"type": "string"},
+                },
+                "required": ["score", "reasoning", "bear_case"],
+            },
+            "funding": {
+                "type": "object",
+                "properties": {
+                    "story": {"type": "string"},
+                    "sources_used": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["story"],
+            },
+            "team": {
+                "type": "object",
+                "properties": {
+                    "thesis": {"type": "string"},
+                    "founders": {"type": "array"},
+                },
+                "required": ["thesis"],
+            },
+            "traction": {
+                "type": "object",
+                "properties": {
+                    "narrative": {"type": "string"},
+                    "highlights": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["narrative"],
+            },
+            "prior_engagement": {
+                "type": "object",
+                "properties": {
+                    "summary": {"type": "string"},
+                    "timeline": {"type": "array"},
+                },
+                "required": ["summary"],
+            },
+            "industry_deepdive": {"type": "string"},
+            "market_deepdive": {"type": "string"},
+            "key_engagement_questions": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 3,
+                "maxItems": 5,
+            },
+            "podcast_mentions": {"type": "array"},
+            "news": {"type": "array"},
+        },
+        "required": [
+            "snapshot",
+            "thesis_fit",
+            "funding",
+            "team",
+            "traction",
+            "prior_engagement",
+            "industry_deepdive",
+            "market_deepdive",
+            "key_engagement_questions",
+        ],
+    },
+}
+
+
+def _call_anthropic_with_tool(
+    *,
+    system: str | None,
+    user_content: str,
+    max_tokens: int,
+) -> tuple[dict | None, str | None]:
+    """Call Claude with a forced tool_use. Returns (parsed_dict, error).
+
+    Uses Anthropic's tool_choice={"type": "tool", "name": "submit_brief"}
+    to force Claude to invoke the SUBMIT_BRIEF_TOOL. The tool's input_schema
+    guarantees the returned dict is valid JSON matching the BriefOutput shape.
+    Never raises — every failure is returned as an error string.
+    """
+    try:
+        client = get_client()
+        response = client.messages.create(
+            model=DEFAULT_MODEL,
+            max_tokens=max_tokens,
+            timeout=_PER_CALL_TIMEOUT_S,
+            system=system if system else None,
+            tools=[SUBMIT_BRIEF_TOOL],
+            tool_choice={"type": "tool", "name": "submit_brief"},
+            messages=[{"role": "user", "content": user_content}],
+        )
+        for block in response.content or []:
+            if getattr(block, "type", None) == "tool_use" and getattr(block, "name", None) == "submit_brief":
+                payload = getattr(block, "input", None)
+                if isinstance(payload, dict):
+                    return payload, None
+        return None, "no submit_brief tool_use block in response"
+    except Exception as exc:  # noqa: BLE001
+        return None, f"{type(exc).__name__}: {exc}"
+
+
 def _record_tool_call(
     state: BriefState,
     *,
@@ -179,53 +301,34 @@ async def synthesise_brief(state: BriefState) -> BriefState:
     def _budget_exhausted() -> bool:
         return (time.perf_counter() - started) > _WALLCLOCK_BUDGET_S
 
-    # ── Stage 1: DRAFT (with one parse-retry) ─────────────────────────────
+    # ── Stage 1: DRAFT via forced tool_use ────────────────────────────────
+    # Use Anthropic tool_use with SUBMIT_BRIEF_TOOL — the SDK validates the
+    # tool input against the schema, so a successful response is guaranteed
+    # to be a valid BriefOutput dict. No json.loads, no markdown fence
+    # stripping, no retries needed.
     draft: dict | None = None
-    draft_user = user_message
-
-    for attempt in range(2):  # initial + 1 retry
-        if _budget_exhausted():
-            break
+    if not _budget_exhausted():
         call_started = time.perf_counter()
-        raw_text, error = _call_anthropic(
+        draft, error = _call_anthropic_with_tool(
             system=system_prompt,
-            user_content=draft_user,
+            user_content=user_message,
             max_tokens=_DRAFT_MAX_TOKENS,
         )
         duration_ms = int((time.perf_counter() - call_started) * 1000)
-
-        parse_error: str | None = None
-        if error is None:
-            try:
-                draft = _parse_llm_json(raw_text)
-            except (json.JSONDecodeError, ValueError) as exc:
-                parse_error = f"json_parse: {exc}"
-
-        tool_name = (
-            f"anthropic.messages.create:{DEFAULT_MODEL}"
-            f"#draft{'_retry' if attempt > 0 else ''}"
-        )
         _record_tool_call(
             state,
-            tool=tool_name,
-            input_summary=f"draft attempt={attempt} company={state.company_name}",
-            output_summary=_truncate(raw_text, _OUTPUT_SUMMARY_CAP),
+            tool=f"anthropic.messages.create:{DEFAULT_MODEL}#draft.tool_use",
+            input_summary=f"draft company={state.company_name}",
+            output_summary=_truncate(
+                json.dumps(draft, default=str) if draft else (error or ""),
+                _OUTPUT_SUMMARY_CAP,
+            ),
             duration_ms=duration_ms,
-            error=error or parse_error,
-        )
-
-        if draft is not None:
-            break
-
-        # Retry hint for round 2.
-        draft_user = (
-            user_message
-            + "\n\nYour previous response wasn't valid JSON. Return strict "
-            "JSON only — no prose, no markdown fences."
+            error=error,
         )
 
     if draft is None:
-        state.error = "synthesis JSON parse failed"
+        state.error = f"synthesis tool_use failed: {error}" if error else "synthesis tool_use returned no draft"
         state.timings["synthesis"] = time.perf_counter() - started
         return state
 
@@ -257,42 +360,36 @@ async def synthesise_brief(state: BriefState) -> BriefState:
             error=error or parse_error,
         )
 
-    # ── Stage 3: REVISE (only if critique succeeded; fall back to draft) ──
+    # ── Stage 3: REVISE via forced tool_use (fall back to draft) ──────────
     final: dict[str, Any] = draft
     if critique is not None and not _budget_exhausted():
         revise_user = (
             user_message
             + "\n\nCritique from review:\n"
             + json.dumps(critique)
-            + "\n\nProduce the REVISED brief incorporating these revisions. "
-            "Return strict JSON only."
+            + "\n\nNow produce the REVISED brief incorporating these revisions. "
+            "Call the submit_brief tool with the revised structured payload."
         )
         call_started = time.perf_counter()
-        raw_text, error = _call_anthropic(
+        revised, error = _call_anthropic_with_tool(
             system=system_prompt,
             user_content=revise_user,
             max_tokens=_REVISE_MAX_TOKENS,
         )
         duration_ms = int((time.perf_counter() - call_started) * 1000)
-
-        revised: dict | None = None
-        parse_error: str | None = None
-        if error is None:
-            try:
-                revised = _parse_llm_json(raw_text)
-            except (json.JSONDecodeError, ValueError) as exc:
-                parse_error = f"json_parse: {exc}"
-
         _record_tool_call(
             state,
-            tool=f"anthropic.messages.create:{DEFAULT_MODEL}#revise",
+            tool=f"anthropic.messages.create:{DEFAULT_MODEL}#revise.tool_use",
             input_summary=(
                 f"revise weaknesses="
                 f"{len((critique or {}).get('weaknesses') or [])}"
             ),
-            output_summary=_truncate(raw_text, _OUTPUT_SUMMARY_CAP),
+            output_summary=_truncate(
+                json.dumps(revised, default=str) if revised else (error or ""),
+                _OUTPUT_SUMMARY_CAP,
+            ),
             duration_ms=duration_ms,
-            error=error or parse_error,
+            error=error,
         )
 
         if revised is not None:
