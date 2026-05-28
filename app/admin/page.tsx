@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 
 import { AdminForm } from "@/components/AdminForm";
+import { RecentRuns } from "@/components/RecentRuns";
 import { RunStatus } from "@/components/RunStatus";
 
 const STORAGE_KEY = "pmb-admin-pw";
@@ -87,15 +88,28 @@ export default function AdminPage() {
           )}
 
           {password !== null && runId === null && (
-            <>
+            <div className="space-y-10">
               <AdminForm password={password} onLaunched={setRunId} />
+
+              <div>
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Recent pipeline runs
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  Last 10 runs across all partners. Refreshes every 10 seconds.
+                </p>
+                <div className="mt-3">
+                  <RecentRuns />
+                </div>
+              </div>
+
               <button
                 onClick={handleLogout}
-                className="mt-6 text-xs text-slate-500 underline underline-offset-2 hover:text-slate-700"
+                className="text-xs text-slate-500 underline underline-offset-2 hover:text-slate-700"
               >
                 Sign out
               </button>
-            </>
+            </div>
           )}
 
           {password !== null && runId !== null && (

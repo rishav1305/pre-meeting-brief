@@ -23,12 +23,12 @@ from __future__ import annotations
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from api.config import settings
-from api.db.models import EtlRunLog, PreMeetingBrief
+from api.db.models import Company, EtlRunLog, PreMeetingBrief
 from api.db.session import SessionLocal
 from api.pipeline.graph import run_pipeline
 
@@ -164,3 +164,68 @@ async def get_run_status(run_id: UUID) -> RunStatusResponse:
             node_history=list(run.node_history or []),
             recent_tool_calls=[],
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /api/triggers/runs — list recent runs across all partners
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+@router.get("/triggers/runs")
+async def list_runs(limit: int = Query(10, ge=1, le=50)) -> dict:
+    """Return the most recent N pipeline runs across all partners.
+
+    Joined LEFT-OUTER to company (for company_domain) and pre_meeting_brief
+    (for brief_id + partner). Runs that haven't resolved a company or
+    produced a brief still show — the joined columns simply come back null.
+
+    Used by the Recent Runs panel on /admin so reviewers can see what
+    happened without knowing specific run_ids up front. No auth — the panel
+    is rendered only after the password gate, and the data is non-sensitive
+    (run ids, statuses, domains, partner names).
+    """
+    async with SessionLocal() as session:
+        rows = await session.execute(
+            select(
+                EtlRunLog.run_id,
+                EtlRunLog.started_at,
+                EtlRunLog.completed_at,
+                EtlRunLog.status,
+                EtlRunLog.current_node,
+                Company.domain.label("company_domain"),
+                PreMeetingBrief.brief_id,
+                PreMeetingBrief.partner,
+            )
+            .join(Company, Company.company_id == EtlRunLog.company_id, isouter=True)
+            .join(
+                PreMeetingBrief,
+                PreMeetingBrief.run_id == EtlRunLog.run_id,
+                isouter=True,
+            )
+            .order_by(EtlRunLog.started_at.desc())
+            .limit(limit)
+        )
+
+        items: list[dict] = []
+        for r in rows:
+            duration_ms: int | None = None
+            if r.completed_at and r.started_at:
+                duration_ms = int(
+                    (r.completed_at - r.started_at).total_seconds() * 1000
+                )
+            items.append(
+                {
+                    "run_id": str(r.run_id),
+                    "started_at": r.started_at.isoformat() if r.started_at else None,
+                    "completed_at": (
+                        r.completed_at.isoformat() if r.completed_at else None
+                    ),
+                    "status": r.status,
+                    "duration_ms": duration_ms,
+                    "partner": r.partner,
+                    "company_domain": r.company_domain,
+                    "brief_id": str(r.brief_id) if r.brief_id else None,
+                    "current_node": r.current_node,
+                }
+            )
+        return {"items": items}
