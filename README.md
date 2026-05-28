@@ -8,7 +8,7 @@ An agentic pre-meeting brief platform designed around **Renegade Capital** (the 
 
 **Live**: https://rishavchatterjee.com/pre-meeting-brief
 
-**Status**: Phase 0 + Phase 1 live. Daily agenda lists 6 demo companies; Anduril showcase brief renders with thesis-fit, funding, team, traction, prior engagement, industry/market deep-dives, and key questions. Phase 2 (LangGraph orchestrator + 4 agents + real Claude web_search) is the next plan.
+**Status**: Phase 0 + Phase 1 + Phase 2 live. End-to-end agentic pipeline (LangGraph orchestrator + 4 agents — Qualification, Research with Claude web_search, Data Quality, Synthesis with forced tool_use for guaranteed valid JSON) runs in ~60s on Vercel. Reviewer can visit `/admin`, type any domain, and watch a brief generate live.
 
 ## Development
 
