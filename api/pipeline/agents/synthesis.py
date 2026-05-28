@@ -6,7 +6,7 @@ Three-stage loop:
   3. Revise — a third call incorporates the critique into a final brief.
 
 Bounds: max 3 stages (with 1 automatic retry on stage-1 JSON parse failure),
-90s wallclock budget across the whole loop, and 30s timeout per individual
+540s wallclock budget across the whole loop, and 240s timeout per individual
 call. Every call appends a ToolCall record for the audit UI.
 
 Failure semantics — be conservative:
@@ -36,11 +36,11 @@ from api.pipeline.state import BriefState, ToolCall
 
 
 # ── Tuning constants ───────────────────────────────────────────────────────
-_DRAFT_MAX_TOKENS = 4096
-_CRITIQUE_MAX_TOKENS = 1000
-_REVISE_MAX_TOKENS = 4096
-_PER_CALL_TIMEOUT_S = 30.0
-_WALLCLOCK_BUDGET_S = 90.0
+_DRAFT_MAX_TOKENS = 8000
+_CRITIQUE_MAX_TOKENS = 800
+_REVISE_MAX_TOKENS = 8000
+_PER_CALL_TIMEOUT_S = 240.0
+_WALLCLOCK_BUDGET_S = 540.0
 _INPUT_SUMMARY_CAP = 240
 _OUTPUT_SUMMARY_CAP = 240
 
