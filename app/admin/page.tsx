@@ -36,18 +36,19 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12">
+    <main className="px-6 py-10 sm:py-14">
       <div className="mx-auto max-w-2xl">
-        <header className="border-b border-slate-200 pb-6">
+        <header className="pb-6">
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-            Take-home submission · Capital Numbers · AI-Native Tech Lead
+            Admin
           </p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-            Admin · Generate brief
+            Generate a brief
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            Type any domain (Anduril, Hadrian, Modal, Ramp, Glean, Mercury are pre-seeded).
-            Watch the agentic pipeline assemble the brief in real time.
+            Type any domain (Anduril, Hadrian, Modal, Ramp, Glean, Mercury are pre-seeded —
+            try a new domain to see the full pipeline run). Watch the agentic pipeline
+            assemble the brief in real time.
           </p>
         </header>
 
@@ -97,11 +98,6 @@ export default function AdminPage() {
           )}
         </section>
 
-        <footer className="mt-12 border-t border-slate-200 pt-6 text-xs text-slate-500">
-          <a className="underline underline-offset-2" href="/pre-meeting-brief">
-            ← Back to agenda
-          </a>
-        </footer>
       </div>
     </main>
   );

@@ -94,15 +94,15 @@ const ASCII_DIAGRAM = `                  ┌────────────
 
 export default function PipelinePage() {
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12">
-      <div className="mx-auto max-w-4xl">
-        <header className="border-b border-slate-200 pb-6">
+    <main className="px-6 py-10 sm:py-14">
+      <div className="mx-auto max-w-5xl">
+        <header className="pb-6">
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-            Take-home submission &middot; Capital Numbers &middot; AI-Native Tech Lead
+            How it works
           </p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">Pipeline</h1>
-          <p className="mt-2 text-sm text-slate-600">
-            How a pre-meeting brief gets built &mdash; the system behind the agenda.
+          <p className="mt-2 max-w-2xl text-base text-slate-600">
+            How a pre-meeting brief gets built &mdash; the agentic system behind the agenda.
           </p>
         </header>
 
@@ -228,15 +228,6 @@ export default function PipelinePage() {
           </pre>
         </section>
 
-        <footer className="mt-12 border-t border-slate-200 pt-6 text-xs text-slate-500">
-          <a className="underline underline-offset-2" href="/pre-meeting-brief/">
-            &larr; Back to agenda
-          </a>
-          <span className="mx-2">&middot;</span>
-          <a className="underline underline-offset-2" href="/pre-meeting-brief/approach">
-            Architecture approach (full doc)
-          </a>
-        </footer>
       </div>
     </main>
   );
