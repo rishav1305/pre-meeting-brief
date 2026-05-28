@@ -51,6 +51,10 @@ export default async function Home() {
           <a className="underline underline-offset-2" href="/pre-meeting-brief/approach">
             Architecture approach
           </a>
+          <span className="mx-2">&middot;</span>
+          <a className="underline underline-offset-2" href="/pre-meeting-brief/pipeline">
+            Pipeline preview
+          </a>
         </footer>
       </div>
     </main>
