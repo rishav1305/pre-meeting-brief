@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     # Optional for Phase 2+
     anthropic_api_key: str = ""
+    anthropic_base_url: str = ""
     admin_password: str = ""
 
 
