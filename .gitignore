@@ -54,3 +54,4 @@ venv/
 
 # recruiter inputs (private)
 files/
+.env*.local
